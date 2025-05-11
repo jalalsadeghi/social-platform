@@ -1,6 +1,6 @@
-# schemas.py
+# backend/src/modules/admin/schemas.py
 from pydantic import BaseModel, UUID4, EmailStr
-from typing import Optional, List
+from typing import Optional
 
 class UserOut(BaseModel):
     id: UUID4

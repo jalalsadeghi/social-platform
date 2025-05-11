@@ -1,50 +1,57 @@
-# routers.py
-from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+# backend/src/modules/admin/routers.py
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from modules.admin import schemas, crud
+from typing import List
+from uuid import UUID
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
-def get_db():
-    db = get_db()
-    try:
-        yield db
-    finally:
-        db.close()
-
 # User Management
 @router.get("/users", response_model=List[schemas.UserOut])
-def read_users(query: str = None, db: Session = Depends(get_db)):
-    return crud.get_users(db, query)
+async def read_users(query: str = None, db: AsyncSession = Depends(get_db)):
+    return await crud.get_users(db, query)
 
 @router.put("/users/{user_id}", response_model=schemas.UserOut)
-def update_user(user_id, data: schemas.UserUpdate, db: Session = Depends(get_db)):
-    return crud.update_user(db, user_id, data)
+async def update_user(user_id: UUID, data: schemas.UserUpdate, db: AsyncSession = Depends(get_db)):
+    user = await crud.update_user(db, user_id, data)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 # Role Management
 @router.get("/roles", response_model=List[schemas.RoleOut])
-def read_roles(db: Session = Depends(get_db)):
-    return crud.get_roles(db)
+async def read_roles(db: AsyncSession = Depends(get_db)):
+    return await crud.get_roles(db)
 
 @router.put("/roles/{role_id}", response_model=schemas.RoleOut)
-def update_role(role_id, data: schemas.RoleUpdate, db: Session = Depends(get_db)):
-    return crud.update_role(db, role_id, data)
+async def update_role(role_id: UUID, data: schemas.RoleUpdate, db: AsyncSession = Depends(get_db)):
+    role = await crud.update_role(db, role_id, data)
+    if not role:
+        raise HTTPException(status_code=404, detail="Role not found")
+    return role
 
 # Plan Management
 @router.post("/plans", response_model=schemas.PlanOut)
-def create_plan(plan: schemas.PlanCreate, db: Session = Depends(get_db)):
-    return crud.create_plan(db, plan)
+async def create_plan(plan: schemas.PlanCreate, db: AsyncSession = Depends(get_db)):
+    return await crud.create_plan(db, plan)
 
 @router.put("/plans/{plan_id}", response_model=schemas.PlanOut)
-def update_plan(plan_id, data: schemas.PlanUpdate, db: Session = Depends(get_db)):
-    return crud.update_plan(db, plan_id, data)
+async def update_plan(plan_id: UUID, data: schemas.PlanUpdate, db: AsyncSession = Depends(get_db)):
+    plan = await crud.update_plan(db, plan_id, data)
+    if not plan:
+        raise HTTPException(status_code=404, detail="Plan not found")
+    return plan
 
 # AI Prompt Management
 @router.post("/prompts", response_model=schemas.PromptOut)
-def create_prompt(prompt: schemas.PromptCreate, db: Session = Depends(get_db)):
-    return crud.create_prompt(db, prompt)
+async def create_prompt(prompt: schemas.PromptCreate, db: AsyncSession = Depends(get_db)):
+    return await crud.create_prompt(db, prompt)
 
 @router.put("/prompts/{prompt_id}", response_model=schemas.PromptOut)
-def update_prompt(prompt_id, data: schemas.PromptUpdate, db: Session = Depends(get_db)):
-    return crud.update_prompt(db, prompt_id, data)
+async def update_prompt(prompt_id: UUID, data: schemas.PromptUpdate, db: AsyncSession = Depends(get_db)):
+    prompt = await crud.update_prompt(db, prompt_id, data)
+    if not prompt:
+        raise HTTPException(status_code=404, detail="Prompt not found")
+    return prompt

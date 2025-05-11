@@ -1,5 +1,6 @@
+# backend/src/modules/ai/models.py
 import uuid
-from sqlalchemy import Column, String, ForeignKey, DateTime, Enum, JSON, Float, Text
+from sqlalchemy import Column, String, ForeignKey, DateTime, Enum, Float, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from core.database import Base
@@ -18,21 +19,21 @@ class AIPrompt(Base):
     prompt_content = Column(Text, nullable=False)
     prompt_type = Column(Enum(PromptType), nullable=False)
     settings = Column(JSONB, default=dict)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    contents = relationship("AIContent", back_populates="prompt")
+    contents = relationship("AIContent", back_populates="prompt", lazy="selectin")
 
 class AIContent(Base):
     __tablename__ = 'ai_contents'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_queue_id = Column(UUID(as_uuid=True), ForeignKey('product_queues.id'), nullable=False)
-    prompt_id = Column(UUID(as_uuid=True), ForeignKey('ai_prompts.id'), nullable=False)
+    product_queue_id = Column(UUID(as_uuid=True), ForeignKey('product_queues.id', ondelete='CASCADE'), nullable=False)
+    prompt_id = Column(UUID(as_uuid=True), ForeignKey('ai_prompts.id', ondelete='SET NULL'), nullable=True)
     content_text = Column(Text, nullable=False)
     evaluation_score = Column(Float, nullable=True)
-    created_at = Column(DateTime, default=func.now())
-    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    prompt = relationship("AIPrompt", back_populates="contents")
-
+    prompt = relationship("AIPrompt", back_populates="contents", lazy="joined")
+    product_queue = relationship("ProductQueue", backref="ai_contents", lazy="joined")

@@ -1,66 +1,94 @@
-# crud.py
-from sqlalchemy.orm import Session
+# backend/src/modules/admin/crud.py
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from modules.user.models import User, Role
 from modules.plan.models import Plan
 from modules.ai.models import AIPrompt
 from sqlalchemy import or_
+import uuid
 
-def get_users(db: Session, query: str = None):
+async def get_users(db: AsyncSession, query: str = None):
+    stmt = select(User)
     if query:
-        return db.query(User).filter(or_(User.username.ilike(f"%{query}%"), User.email.ilike(f"%{query}%"))).all()
-    return db.query(User).all()
+        stmt = stmt.filter(
+            or_(
+                User.username.ilike(f"%{query}%"),
+                User.email.ilike(f"%{query}%")
+            )
+        )
+    result = await db.execute(stmt)
+    return result.scalars().all()
 
-def update_user(db: Session, user_id, data):
-    db_user = db.query(User).filter(User.id == user_id).first()
-    for key, value in data.dict(exclude_unset=True).items():
+async def update_user(db: AsyncSession, user_id: uuid.UUID, data):
+    result = await db.execute(select(User).where(User.id == user_id))
+    db_user = result.scalars().first()
+    if not db_user:
+        return None
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
         setattr(db_user, key, value)
-    db.commit()
-    db.refresh(db_user)
+    await db.commit()
+    await db.refresh(db_user)
     return db_user
 
-def get_roles(db: Session):
-    return db.query(Role).all()
+async def get_roles(db: AsyncSession):
+    result = await db.execute(select(Role))
+    return result.scalars().all()
 
-def update_role(db: Session, role_id, data):
-    db_role = db.query(Role).filter(Role.id == role_id).first()
-    for key, value in data.dict(exclude_unset=True).items():
+async def update_role(db: AsyncSession, role_id: uuid.UUID, data):
+    result = await db.execute(select(Role).where(Role.id == role_id))
+    db_role = result.scalars().first()
+    if not db_role:
+        return None
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
         setattr(db_role, key, value)
-    db.commit()
-    db.refresh(db_role)
+    await db.commit()
+    await db.refresh(db_role)
     return db_role
 
-def create_plan(db: Session, plan):
+async def create_plan(db: AsyncSession, plan):
     db_plan = Plan(**plan.dict())
     db.add(db_plan)
-    db.commit()
-    db.refresh(db_plan)
+    await db.commit()
+    await db.refresh(db_plan)
     return db_plan
 
-def update_plan(db: Session, plan_id, data):
-    db_plan = db.query(Plan).filter(Plan.id == plan_id).first()
-    for key, value in data.dict(exclude_unset=True).items():
+async def update_plan(db: AsyncSession, plan_id: uuid.UUID, data):
+    result = await db.execute(select(Plan).where(Plan.id == plan_id))
+    db_plan = result.scalars().first()
+    if not db_plan:
+        return None
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
         setattr(db_plan, key, value)
-    db.commit()
-    db.refresh(db_plan)
+    await db.commit()
+    await db.refresh(db_plan)
     return db_plan
 
-def get_plans(db: Session):
-    return db.query(Plan).all()
+async def get_plans(db: AsyncSession):
+    result = await db.execute(select(Plan))
+    return result.scalars().all()
 
-def create_prompt(db: Session, prompt):
+async def create_prompt(db: AsyncSession, prompt):
     db_prompt = AIPrompt(**prompt.dict())
     db.add(db_prompt)
-    db.commit()
-    db.refresh(db_prompt)
+    await db.commit()
+    await db.refresh(db_prompt)
     return db_prompt
 
-def update_prompt(db: Session, prompt_id, data):
-    db_prompt = db.query(AIPrompt).filter(AIPrompt.id == prompt_id).first()
-    for key, value in data.dict(exclude_unset=True).items():
+async def update_prompt(db: AsyncSession, prompt_id: uuid.UUID, data):
+    result = await db.execute(select(AIPrompt).where(AIPrompt.id == prompt_id))
+    db_prompt = result.scalars().first()
+    if not db_prompt:
+        return None
+    update_data = data.dict(exclude_unset=True)
+    for key, value in update_data.items():
         setattr(db_prompt, key, value)
-    db.commit()
-    db.refresh(db_prompt)
+    await db.commit()
+    await db.refresh(db_prompt)
     return db_prompt
 
-def get_prompts(db: Session):
-    return db.query(AIPrompt).all()
+async def get_prompts(db: AsyncSession):
+    result = await db.execute(select(AIPrompt))
+    return result.scalars().all()
