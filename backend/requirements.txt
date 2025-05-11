@@ -1,3 +1,4 @@
+# requirements.txt
 fastapi==0.111.0
 uvicorn[standard]==0.29.0
 SQLAlchemy[asyncio]==2.0.30
@@ -10,3 +11,8 @@ python-multipart==0.0.9
 passlib[bcrypt]==1.7.4
 PyJWT==2.8.0
 python-jose==3.3.0
+sqlalchemy[asyncio]==2.0.30 
+aiosqlite==0.20.0 
+pytest==7.4.0
+pytest-asyncio==0.21.0 
+httpx==0.25.0

@@ -22,19 +22,23 @@ services:
       - backend/.env
     ports:
       - 8000:8000
+    volumes:
+      - ./backend:/app
     depends_on:
       - db
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: social_platform_frontend
-    restart: unless-stopped
-    ports:
-      - 3000:3000
-    depends_on:
-      - backend
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: social_platform_frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - 3000:3000
+  #   depends_on:
+  #     - backend
 
 volumes:
   postgres_data:
+  backend:
+  

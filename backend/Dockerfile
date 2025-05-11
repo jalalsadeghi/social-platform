@@ -8,6 +8,7 @@ COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && pip install -r /app/requirements.txt
 
 COPY ./src /app/src
+COPY ./tests /app/tests
 COPY ./migrations /app/migrations
 COPY ./alembic.ini /app/alembic.ini
 COPY ./.env /app/.env
