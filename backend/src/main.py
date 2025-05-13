@@ -12,8 +12,7 @@ from modules.user.routers import router as user_router
 from modules.auth.routers import router as auth_router
 from modules.admin.routers import router as admin_router
 from modules.ai.routers import router as ai_router
-from modules.product_queue.routers import router as product_queue_router
-
+from modules.product.routers import router as product_router
 # Logger setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -57,7 +56,7 @@ app.include_router(user_router)
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(ai_router)
-app.include_router(product_queue_router)
+app.include_router(product_router)
 
 # Root endpoint
 @app.get("/")

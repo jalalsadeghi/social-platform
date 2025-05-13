@@ -1,4 +1,4 @@
-# backend/src/modules/ai/models.py
+# src/modules/ai/models.py
 import uuid
 from sqlalchemy import Column, String, ForeignKey, DateTime, Enum, Float, Text
 from sqlalchemy.dialects.postgresql import UUID, JSONB
@@ -28,7 +28,7 @@ class AIContent(Base):
     __tablename__ = 'ai_contents'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_queue_id = Column(UUID(as_uuid=True), ForeignKey('product_queues.id', ondelete='CASCADE'), nullable=False)
+    product_id = Column(UUID(as_uuid=True), ForeignKey('product.id', ondelete='CASCADE'), nullable=False)
     prompt_id = Column(UUID(as_uuid=True), ForeignKey('ai_prompts.id', ondelete='SET NULL'), nullable=True)
     content_text = Column(Text, nullable=False)
     evaluation_score = Column(Float, nullable=True)
@@ -36,4 +36,4 @@ class AIContent(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     prompt = relationship("AIPrompt", back_populates="contents", lazy="joined")
-    product_queue = relationship("ProductQueue", backref="ai_contents", lazy="joined")
+    product = relationship("Product", back_populates="ai_contents", lazy="selectin") 
