@@ -1,12 +1,10 @@
 # backend/tests/test_auth.py
-
 import pytest
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from core.database import Base, get_db
 from src.main import app
-import os
 
 DATABASE_URL = "sqlite+aiosqlite:///./test.db"
 
@@ -21,13 +19,9 @@ app.dependency_overrides[get_db] = override_get_db
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database():
-    # ایجاد پایگاه داده
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-
     yield
-
-    # حذف پایگاه داده
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 

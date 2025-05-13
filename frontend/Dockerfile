@@ -1,14 +1,15 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json package-lock.json /app/
-RUN npm install
+RUN apk update && apk add --no-cache git
 
-COPY . /app
-RUN npm run build
+COPY package.json package-lock.json ./
 
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+RUN npm install jwt-decode @types/jwt-decode && npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev", "--", "--host"]

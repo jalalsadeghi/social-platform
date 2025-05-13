@@ -1,6 +1,8 @@
 # backend/src/main.py
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from core.config import settings
 import logging
 from core.database import engine, Base, async_session
 from core.initial_data import create_initial_data
@@ -17,6 +19,16 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Secure and Scalable FastAPI Project")
+
+origins = [settings.FRONTEND_URL]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Startup event
 @app.on_event("startup")

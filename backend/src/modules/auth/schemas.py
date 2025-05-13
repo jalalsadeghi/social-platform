@@ -1,5 +1,5 @@
 # modules/auth/schemas.py
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, UUID4
 from typing import Optional
 
 class Token(BaseModel):
@@ -20,3 +20,13 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class UserOut(BaseModel):
+    id: UUID4
+    username: str
+    email: EmailStr
+    full_name: Optional[str]
+    profile_picture: Optional[str]
+
+    class Config:
+        from_attributes = True
