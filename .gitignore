@@ -12,6 +12,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+uploads/
 eggs/
 .eggs/
 lib/
@@ -172,3 +173,4 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
