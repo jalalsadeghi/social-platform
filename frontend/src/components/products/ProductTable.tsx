@@ -181,6 +181,11 @@ export const ProductTable = () => {
             product_url: selectedProduct.product_url,
             description: selectedProduct.description,
             ai_content: selectedProduct.ai_content,
+            media: selectedProduct.media.map(m => ({
+              id: m.id,
+              media_url: m.media_url,
+              media_type: m.media_type
+            }))
           }}
           open={dialogOpen}
           onClose={handleCloseDialog}

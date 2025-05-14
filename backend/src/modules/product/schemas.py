@@ -2,10 +2,15 @@
 from pydantic import BaseModel, UUID4, HttpUrl
 from typing import List, Optional
 from datetime import datetime
+from enum import Enum
+
+class MediaType(str, Enum):
+    image = "image"
+    video = "video"
 
 class MediaBase(BaseModel):
     media_url: HttpUrl
-    media_type: str
+    media_type: MediaType
 
 class MediaCreate(MediaBase):
     pass

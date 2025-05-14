@@ -192,3 +192,6 @@ button:focus-visible {
   }
 }
 
+/* ME */
+.xdelete{padding:0%; color: var(--color-red-500);}
+.xdelete:hover{border-color:  var(--color-red-500);}

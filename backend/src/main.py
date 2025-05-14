@@ -6,6 +6,8 @@ from core.config import settings
 import logging
 from core.database import engine, Base, async_session
 from core.initial_data import create_initial_data
+from fastapi.staticfiles import StaticFiles
+
 # Import Routers
 from modules.plan.routers import router as plan_router
 from modules.user.routers import router as user_router
@@ -13,11 +15,14 @@ from modules.auth.routers import router as auth_router
 from modules.admin.routers import router as admin_router
 from modules.ai.routers import router as ai_router
 from modules.product.routers import router as product_router
+from modules.upload.routers import router as upload_router
 # Logger setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Secure and Scalable FastAPI Project")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+
 
 origins = [settings.FRONTEND_URL]
 
@@ -57,6 +62,7 @@ app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(ai_router)
 app.include_router(product_router)
+app.include_router(upload_router)
 
 # Root endpoint
 @app.get("/")

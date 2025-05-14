@@ -1,6 +1,7 @@
 // src/components/products/ProductDialog.tsx
 import React, { useState, useEffect } from "react";
 import { useProducts } from "@/hooks/useProducts";
+import { uploadFile } from "@/services/upload";
 import { ProductMediaUploader } from "./ProductMediaUploader";
 import {
   Dialog,
@@ -12,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+interface Media {
+  id?: string;
+  media_url: string;
+  media_type: "image" | "video";
+}
+
 interface Props {
   productId?: string;
   initialData?: {
@@ -19,6 +26,7 @@ interface Props {
     product_url?: string;
     description?: string;
     ai_content?: string;
+    media?: Media[];
   };
   open: boolean;
   onClose: () => void;
@@ -39,50 +47,70 @@ export const ProductDialog: React.FC<Props> = ({
   onClose,
 }) => {
   const { createMutation, updateMutation } = useProducts();
+
   const [formData, setFormData] = useState({
     title: "",
     product_url: "",
     description: "",
     ai_content: "",
-    media: [] as File[],
   });
 
+  const [existingMedia, setExistingMedia] = useState<Media[]>([]);
+  const [newMediaFiles, setNewMediaFiles] = useState<File[]>([]);
   const [urlError, setUrlError] = useState(false);
 
   useEffect(() => {
-    if (initialData) setFormData((prev) => ({ ...prev, ...initialData }));
+    if (initialData) {
+      setFormData({
+        title: initialData.title || "",
+        product_url: initialData.product_url || "",
+        description: initialData.description || "",
+        ai_content: initialData.ai_content || "",
+      });
+
+      setExistingMedia(initialData.media || []);
+    }
   }, [initialData]);
 
   const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const url = e.target.value;
-  setFormData((prev) => ({ ...prev, product_url: url }));
-
-  if (url.length > 0 && !isValidUrl(url)) {
-    setUrlError(true);
-  } else {
-    setUrlError(false);
-  }
-};
-
-const handleSubmit = () => {
-  if (formData.product_url && !isValidUrl(formData.product_url)) {
-    setUrlError(true);
-    return;
-  }
-
-  const productData = {
-    ...formData,
-    media: [],
+    const url = e.target.value;
+    setFormData((prev) => ({ ...prev, product_url: url }));
+    setUrlError(url.length > 0 && !isValidUrl(url));
   };
 
-  productId
-    ? updateMutation.mutate({ id: productId, data: productData })
-    : createMutation.mutate(productData);
+  const handleSubmit = async () => {
+    if (formData.product_url && !isValidUrl(formData.product_url)) {
+      setUrlError(true);
+      return;
+    }
 
-  onClose();
-};
+    const uploadedMedia = await Promise.all(
+      newMediaFiles.map(async (file) => {
+        const media_url = await uploadFile(file);
+        return {
+          media_url,
+          media_type: file.type.startsWith("video") ? "video" as const : "image" as const,
+        };
+      })
+    );
 
-const isAddButtonDisabled = urlError || !formData.title;
+    const productData = {
+      ...formData,
+      media: [...existingMedia, ...uploadedMedia],
+    };
+
+    productId
+      ? updateMutation.mutate({ id: productId, data: productData })
+      : createMutation.mutate(productData);
+
+    onClose();
+  };
+
+  const handleRemoveExistingMedia = (media_url: string) => {
+    setExistingMedia((prev) => prev.filter((media) => media.media_url !== media_url));
+  };
+
+  const isAddButtonDisabled = urlError || !formData.title;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -97,9 +125,8 @@ const isAddButtonDisabled = urlError || !formData.title;
           value={formData.product_url}
           onChange={handleUrlChange}
           placeholder="Product URL (optional)"
-          className={urlError ? "border-2 border-red-500 focus-visible:ring-0 focus-visible:ring-offset-0" : ""}
+          className={urlError ? "border-2 border-red-500" : ""}
         />
-
 
         <Input
           value={formData.title}
@@ -109,24 +136,20 @@ const isAddButtonDisabled = urlError || !formData.title;
 
         <Textarea
           value={formData.description}
-          onChange={(e) =>
-            setFormData({ ...formData, description: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           placeholder="Description"
         />
 
         <Textarea
           value={formData.ai_content}
-          onChange={(e) =>
-            setFormData({ ...formData, ai_content: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, ai_content: e.target.value })}
           placeholder="AI Content"
         />
 
         <ProductMediaUploader
-          onFilesSelected={(files) =>
-            setFormData({ ...formData, media: files })
-          }
+          existingMedia={existingMedia}
+          onRemoveExisting={handleRemoveExistingMedia}
+          onFilesSelected={(files) => setNewMediaFiles(files)}
         />
 
         <Button onClick={handleSubmit} disabled={isAddButtonDisabled}>

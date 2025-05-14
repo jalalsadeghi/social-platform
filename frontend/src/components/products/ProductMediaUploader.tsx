@@ -1,24 +1,36 @@
-import React, { useState } from "react";
+// src/components/products/ProductMediaUploader.tsx
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
-interface Props {
-  onFilesSelected: (files: File[]) => void;
+interface Media {
+  id?: string;
+  media_url: string;
+  media_type: "image" | "video";
 }
 
-export const ProductMediaUploader: React.FC<Props> = ({ onFilesSelected }) => {
+interface Props {
+  existingMedia?: Media[];
+  onFilesSelected: (files: File[]) => void;
+  onRemoveExisting?: (url: string) => void;
+}
+
+export const ProductMediaUploader: React.FC<Props> = ({
+  existingMedia = [],
+  onFilesSelected,
+  onRemoveExisting,
+}) => {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files ? Array.from(event.target.files) : [];
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
     onFilesSelected(files);
-
-    const urls = files.map(file => URL.createObjectURL(file));
-    setPreviewUrls(urls);
+    setPreviewUrls(files.map((file) => URL.createObjectURL(file)));
   };
 
-  const removeMedia = (index: number) => {
-    setPreviewUrls(urls => urls.filter((_, i) => i !== index));
-  };
+  useEffect(() => {
+    // Clean up memory leaks
+    return () => previewUrls.forEach(URL.revokeObjectURL);
+  }, [previewUrls]);
 
   return (
     <div className="space-y-4">
@@ -35,20 +47,25 @@ export const ProductMediaUploader: React.FC<Props> = ({ onFilesSelected }) => {
       </Button>
 
       <div className="flex gap-2 flex-wrap">
-        {previewUrls.map((url, index) => (
-          <div key={index} className="relative">
-            {url.includes("video") ? (
-              <video src={url} className="h-20 w-auto" controls />
+        {existingMedia.map((media) => (
+          <div key={media.media_url} className="relative">
+            {media.media_type === "video" ? (
+              <video src={media.media_url} className="h-20 w-auto" controls />
             ) : (
-              <img src={url} className="h-20 w-auto" alt={`media-${index}`} />
+              <img src={media.media_url} className="h-20 w-auto" />
             )}
             <button
-              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex justify-center items-center text-xs"
-              onClick={() => removeMedia(index)}
+              type="button"
+              className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 xdelete"
+              onClick={() => onRemoveExisting?.(media.media_url)}
             >
               &times;
             </button>
           </div>
+        ))}
+
+        {previewUrls.map((url) => (
+          <img key={url} src={url} className="h-20 w-auto opacity-70" />
         ))}
       </div>
     </div>
