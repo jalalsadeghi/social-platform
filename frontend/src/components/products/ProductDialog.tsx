@@ -12,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { scrapeProduct } from "@/services/scraping";
+import { toast } from "sonner";
 
 interface Media {
   id?: string;
@@ -40,6 +42,8 @@ const isValidUrl = (url: string) => {
   }
 };
 
+
+
 export const ProductDialog: React.FC<Props> = ({
   productId,
   initialData,
@@ -58,6 +62,7 @@ export const ProductDialog: React.FC<Props> = ({
   const [existingMedia, setExistingMedia] = useState<Media[]>([]);
   const [newMediaFiles, setNewMediaFiles] = useState<File[]>([]);
   const [urlError, setUrlError] = useState(false);
+  const [isScraping, setIsScraping] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -106,6 +111,37 @@ export const ProductDialog: React.FC<Props> = ({
     onClose();
   };
 
+  const handleScrape = async () => {
+    if (!formData.product_url || !isValidUrl(formData.product_url)) {
+      setUrlError(true);
+      return;
+    }
+
+    setIsScraping(true);
+    try {
+      const scrapedData = await scrapeProduct(formData.product_url);
+      setFormData(prev => ({
+        ...prev,
+        title: scrapedData.title || prev.title,
+        description: scrapedData.description || prev.description,
+        ai_content: scrapedData.ai_content || prev.ai_content,
+      }));
+
+      const fetchedMedia = scrapedData.media_urls.map((url) => ({
+        media_url: url,
+        media_type: url.match(/\.(mp4|mov)$/i) ? "video" as const : "image" as const,
+      }));
+
+      setExistingMedia(prev => [...prev, ...fetchedMedia]);
+
+      toast.success("Scraping completed successfully.");
+    } catch (error) {
+      toast.error(`Scraping failed: ${error}`);
+    } finally {
+      setIsScraping(false);
+    }
+  };
+
   const handleRemoveExistingMedia = (media_url: string) => {
     setExistingMedia((prev) => prev.filter((media) => media.media_url !== media_url));
   };
@@ -121,13 +157,25 @@ export const ProductDialog: React.FC<Props> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <Input
+        {/* <Input
           value={formData.product_url}
           onChange={handleUrlChange}
           placeholder="Product URL (optional)"
           className={urlError ? "border-2 border-red-500" : ""}
-        />
-
+        /> */}
+        <div className="flex gap-2">
+          <Input
+            value={formData.product_url}
+            onChange={handleUrlChange}
+            placeholder="Product URL (optional)"
+            className={urlError ? "border-2 border-red-500" : ""}
+          />
+          {!productId && (
+            <Button onClick={handleScrape} disabled={isScraping}>
+              {isScraping ? "Scraping..." : "Scrape"}
+            </Button>
+          )}
+        </div>
         <Input
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}

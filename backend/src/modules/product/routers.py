@@ -5,6 +5,7 @@ from typing import List, Optional
 from uuid import UUID
 from modules.product import crud, schemas
 from core.database import get_db
+from .scraper import scrape_and_extract
 from modules.auth.utils import verify_access_token
 from fastapi import Request
 
@@ -65,3 +66,14 @@ async def delete_product(product_id: UUID, request: Request, db: AsyncSession = 
     if not success:
         raise HTTPException(status_code=404, detail="Product not found or Unauthorized")
     return {"detail": "Product deleted successfully"}
+
+
+@router.post("/scrape/")
+async def scrape_product(url: str, request: Request):
+    base_url = str(request.base_url).rstrip('/')
+    try:
+        result = await scrape_and_extract(url, base_url)
+        return result
+    except Exception as e:
+        print(f"Scraping error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))

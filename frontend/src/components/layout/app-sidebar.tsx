@@ -7,6 +7,7 @@ import {
   Home,
   Search,
   Sparkles,
+  TableOfContentsIcon,
 } from "lucide-react"
 
 import { NavMain } from "@/components/layout/nav-main"
@@ -31,9 +32,9 @@ const data = {
   },
   navMain: [
     {
-      title: "Search",
-      url: "#",
-      icon: Search,
+      title: "Product",
+      url: "/products",
+      icon: TableOfContentsIcon,
     },
     {
       title: "Ask AI",

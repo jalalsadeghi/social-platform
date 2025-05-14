@@ -5,7 +5,8 @@ FROM python:3.12-slim
 WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip && pip install -r /app/requirements.txt
+RUN pip install --upgrade pip && pip install -r /app/requirements.txt \
+    && playwright install chromium --with-deps
 
 COPY ./src /app/src
 COPY ./tests /app/tests

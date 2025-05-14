@@ -13,7 +13,7 @@ if not os.path.exists(UPLOAD_DIRECTORY):
 
 @router.post("/")
 async def upload_file(request: Request, file: UploadFile = File(...)):
-    allowed_extensions = ['png', 'jpg', 'jpeg', 'mp4', 'mov']
+    allowed_extensions = ['png', 'jpg', 'jpeg', 'avif', 'mp4', 'mov']
     file_extension = file.filename.split(".")[-1]
 
     if file_extension not in allowed_extensions:
