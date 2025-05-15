@@ -83,6 +83,17 @@ export const ProductDialog: React.FC<Props> = ({
     setUrlError(url.length > 0 && !isValidUrl(url));
   };
 
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      product_url: "",
+      description: "",
+      ai_content: "",
+    });
+    setExistingMedia([]);
+    setNewMediaFiles([]);
+  };
+
   const handleSubmit = async () => {
     if (formData.product_url && !isValidUrl(formData.product_url)) {
       setUrlError(true);
@@ -109,6 +120,7 @@ export const ProductDialog: React.FC<Props> = ({
       : createMutation.mutate(productData);
 
     onClose();
+    resetForm();
   };
 
   const handleScrape = async () => {

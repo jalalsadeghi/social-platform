@@ -32,7 +32,7 @@ const data = {
   },
   navMain: [
     {
-      title: "Product",
+      title: "Products",
       url: "/products",
       icon: TableOfContentsIcon,
     },
