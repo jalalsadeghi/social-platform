@@ -1,10 +1,13 @@
+# src/modules/product/scraping
 from playwright.async_api import async_playwright
 from openai import OpenAI
 from core.config import settings
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import json
-import re
+import random
+import asyncio
+
 
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -12,11 +15,14 @@ async def scrape_and_extract(url: str, base_url: str, timeout=60) -> dict:
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
-            context = await browser.new_context()
+            context = await browser.new_context(user_agent=settings.USER_AGENT)
 
             page = await context.new_page()
 
             await page.goto(url, timeout=timeout*1000)
+
+            await asyncio.sleep(random.uniform(3, 10))
+
             content = await page.content()
 
             await browser.close()

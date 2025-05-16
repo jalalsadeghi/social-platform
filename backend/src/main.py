@@ -16,6 +16,7 @@ from modules.admin.routers import router as admin_router
 from modules.ai.routers import router as ai_router
 from modules.product.routers import router as product_router
 from modules.upload.routers import router as upload_router
+from modules.platform.instagram_bot.routers import router as instagram_bot_router
 # Logger setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -63,6 +64,7 @@ app.include_router(admin_router)
 app.include_router(ai_router)
 app.include_router(product_router)
 app.include_router(upload_router)
+app.include_router(instagram_bot_router, prefix="/instagram-bot", tags=["Instagram Bot"])
 
 # Root endpoint
 @app.get("/")
