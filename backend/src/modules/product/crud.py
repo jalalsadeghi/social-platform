@@ -1,11 +1,13 @@
-# src/product/crud.py
+# src/modules/product/crud.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
-from .models import Product, Media
+from datetime import datetime, timezone
+from .models import Product, Media, QueueStatus
 from .schemas import ProductCreate, ProductUpdate
 import uuid
 from uuid import UUID
+from typing import Optional
 
 async def get_products(db: AsyncSession, user_id: uuid.UUID, skip=0, limit=30):
     result = await db.execute(select(Product).where(Product.user_id == user_id).offset(skip).limit(limit))
@@ -74,3 +76,25 @@ async def update_product(db: AsyncSession, product_id: UUID, product_update: Pro
     await db.refresh(db_product)
     return db_product
 
+async def get_scheduled_products(db: AsyncSession, limit: int = 10):
+    now = datetime.now(timezone.utc)
+    result = await db.execute(
+        select(Product)
+        .where(Product.status == QueueStatus.ready)
+        .where(Product.scheduled_time <= now)
+        .order_by(Product.priority.desc(), Product.scheduled_time.asc())
+        .limit(limit)
+    )
+    return result.scalars().all()
+
+# async def set_product_ready(db: AsyncSession, product_id: UUID, user_id: UUID, scheduled_time: Optional[datetime] = None):
+#     db_product = await get_product(db, product_id, user_id)
+#     if not db_product:
+#         return None
+
+#     db_product.status = QueueStatus.ready
+#     db_product.scheduled_time = scheduled_time or datetime.now(timezone.utc)
+
+#     await db.commit()
+#     await db.refresh(db_product)
+#     return db_product

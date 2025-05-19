@@ -5,6 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from core.database import Base
+from modules.ai.models import AIContent
 import enum
 
 class QueueStatus(enum.Enum):

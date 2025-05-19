@@ -26,3 +26,17 @@ async def get_social_credentials(db: AsyncSession, user_id: UUID, platform: str)
 
     decrypted_creds = {key: decrypt(value) for key, value in account.credentials.items()}
     return decrypted_creds
+
+async def store_cookies(db: AsyncSession, user_id: UUID, platform: str, cookies: list):
+    account = (await db.execute(
+        select(SocialAccount).filter_by(user_id=user_id, platform=platform)
+    )).scalars().first()
+    if account:
+        account.cookies = cookies
+        await db.commit()
+
+async def get_cookies(db: AsyncSession, user_id: UUID, platform: str):
+    account = (await db.execute(
+        select(SocialAccount).filter_by(user_id=user_id, platform=platform)
+    )).scalars().first()
+    return account.cookies if account and account.cookies else None

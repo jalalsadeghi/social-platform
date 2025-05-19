@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, ForeignKey, DateTime, func, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from core.database import Base
+from modules.plan.models import Plan
 
 
 class Role(Base):
@@ -47,6 +48,7 @@ class SocialAccount(Base):
     platform = Column(String, nullable=False, index=True)
     account_identifier = Column(String, nullable=False)
     credentials = Column(JSONB, nullable=True)
+    cookies = Column(JSONB, nullable=True)
     is_oauth = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

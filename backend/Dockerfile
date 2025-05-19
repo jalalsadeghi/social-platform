@@ -1,5 +1,3 @@
-# مسیر: backend/Dockerfile
-
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -8,6 +6,13 @@ COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && pip install -r /app/requirements.txt \
     && playwright install chromium --with-deps
 
+# اضافه کردن فونت‌ها و ابزارهای مرورگر (طبیعی‌سازی بیشتر)
+RUN apt-get update && apt-get install -y \
+    fonts-freefont-ttf \
+    fonts-liberation \
+    fonts-dejavu \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY ./src /app/src
 COPY ./tests /app/tests
 COPY ./migrations /app/migrations
@@ -15,6 +20,7 @@ COPY ./alembic.ini /app/alembic.ini
 COPY ./.env /app/.env
 
 ENV PYTHONPATH=/app/src
+ENV PATH="/usr/local/bin:${PATH}"
 
 EXPOSE 8000
 
