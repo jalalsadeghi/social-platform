@@ -3,12 +3,17 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "@/services/api";
 
+
 interface User {
   id: string;
   username: string;
   email?: string;
   full_name?: string;
   profile_picture?: string;
+  role: {
+    name: string;
+    permissions: Record<string, Record<string, boolean>>;
+  };
 }
 
 interface UseAuth {

@@ -12,6 +12,7 @@ from core.database import get_db
 from datetime import timedelta
 from modules.auth.utils import create_access_token
 from core.config import settings
+from sqlalchemy.orm import joinedload
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -72,7 +73,9 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
     token = get_token_from_cookie(request)
     user_id = verify_access_token(token)
 
-    result = await db.execute(select(User).where(User.id == user_id))
+    result = await db.execute(
+        select(User).options(joinedload(User.role)).where(User.id == user_id)
+    )
     user = result.scalars().first()
 
     if not user:

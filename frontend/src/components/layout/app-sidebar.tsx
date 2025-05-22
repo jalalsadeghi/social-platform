@@ -1,13 +1,14 @@
+// src/components/layout/app-sidebar.tsx
 "use client"
 import * as React from "react"
+import { useAuth } from "@/hooks/useAuth";
 import {
   Command,
   LifeBuoy,
   Send,
-  Home,
-  Search,
   Sparkles,
   TableOfContentsIcon,
+  UserCog,
 } from "lucide-react"
 
 import { NavMain } from "@/components/layout/nav-main"
@@ -30,24 +31,6 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  navMain: [
-    {
-      title: "Products",
-      url: "/products",
-      icon: TableOfContentsIcon,
-    },
-    {
-      title: "Ask AI",
-      url: "#",
-      icon: Sparkles,
-    },
-    {
-      title: "Home",
-      url: "#",
-      icon: Home,
-      isActive: true,
-    },
-  ],
   navSecondary: [
     {
       title: "Support",
@@ -63,6 +46,17 @@ const data = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user } = useAuth();
+
+  const navMain = [
+    { title: "Products", url: "/products", icon: TableOfContentsIcon },
+    { title: "Ask AI", url: "#", icon: Sparkles },
+  ];
+
+  if (user?.role.permissions.role?.read) {
+    navMain.push({ title: "Roles", url: "/roles", icon: UserCog });
+  }
+  
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -85,7 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            <NavMain items={data.navMain} />
+            <NavMain items={navMain} /> {/* اینجا اصلاح شد */}
           </SidebarMenu>
         </SidebarGroup>
         <NavSecondary items={data.navSecondary} className="mt-auto" />

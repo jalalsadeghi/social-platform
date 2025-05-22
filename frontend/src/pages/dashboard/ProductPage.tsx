@@ -5,7 +5,7 @@ const ProductPage = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <ProductDialog />
+        <ProductDialog open={false} onClose={() => {}} />
         <input placeholder="Search..." className="border rounded p-2" />
       </div>
       <ProductTable />
