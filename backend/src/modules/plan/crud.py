@@ -1,10 +1,10 @@
 # src/modules/plan/crud.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from modules.plan.models import Plan, Subscription
+from modules.plan.models import Plan, Subscription, SubscriptionStatus
 from modules.plan.schemas import PlanCreate, PlanUpdate, SubscriptionCreate
-import uuid
 from datetime import datetime, timezone
+import uuid
 
 # Plan operations
 async def create_plan(db: AsyncSession, plan: PlanCreate):
@@ -80,3 +80,16 @@ async def update_subscription_status(db: AsyncSession, subscription_id: uuid.UUI
     await db.commit()
     await db.refresh(db_subscription)
     return db_subscription
+
+async def get_active_subscription(db: AsyncSession, user_id: uuid.UUID):
+    now = datetime.now(timezone.utc)
+    result = await db.execute(
+        select(Subscription)
+        .where(
+            Subscription.user_id == user_id,
+            Subscription.status == SubscriptionStatus.active,
+            Subscription.start_date <= now,
+            Subscription.end_date >= now
+        )
+    )
+    return result.scalars().first()
