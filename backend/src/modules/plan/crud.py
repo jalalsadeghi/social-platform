@@ -47,21 +47,32 @@ async def get_plans(db: AsyncSession, skip: int = 0, limit: int = 100):
     return result.scalars().all()
 
 # Subscription operations
+
 async def create_subscription(db: AsyncSession, subscription: SubscriptionCreate):
-    now = datetime.now(timezone.utc)
+    subscription_data = subscription.dict(exclude_unset=True)
+
+    if not subscription_data.get('start_date'):
+        subscription_data['start_date'] = datetime.now(timezone.utc)
+
     db_subscription = Subscription(
         id=uuid.uuid4(),
-        start_date=now,
-        **subscription.dict()
+        **subscription_data
     )
+
     db.add(db_subscription)
     await db.commit()
+
     await db.refresh(db_subscription)
+
     return db_subscription
 
 async def get_subscription(db: AsyncSession, subscription_id: uuid.UUID):
     result = await db.execute(select(Subscription).where(Subscription.id == subscription_id))
     return result.scalars().first()
+
+async def get_subscriptions(db: AsyncSession, skip: int = 0, limit: int = 100):
+    result = await db.execute(select(Subscription).offset(skip).limit(limit))
+    return result.scalars().all()
 
 async def update_subscription_status(db: AsyncSession, subscription_id: uuid.UUID, status: str):
     db_subscription = await get_subscription(db, subscription_id)

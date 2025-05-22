@@ -41,12 +41,23 @@ class SubscriptionBase(BaseModel):
     end_date: datetime
     status: SubscriptionStatus = SubscriptionStatus.active
 
-class SubscriptionCreate(SubscriptionBase):
+class SubscriptionCreate(BaseModel):
+    user_id: UUID4
+    plan_id: UUID4
+    start_date: Optional[datetime] = None
+    end_date: datetime
+    status: SubscriptionStatus = SubscriptionStatus.active
     payment_id: Optional[UUID4] = None
 
-class SubscriptionOut(SubscriptionBase):
+class SubscriptionOut(BaseModel):
     id: UUID4
+    user_id: UUID4
+    plan_id: UUID4
+    start_date: Optional[datetime] = None
+    end_date: datetime
+    status: SubscriptionStatus
     created_at: datetime
 
     class Config:
         from_attributes = True
+

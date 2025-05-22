@@ -38,5 +38,7 @@ class Subscription(Base):
     status = Column(Enum(SubscriptionStatus), default=SubscriptionStatus.active, index=True)
     payment_id = Column(UUID(as_uuid=True), nullable=True)  # در آینده با جدول پرداخت مرتبط شود
 
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
     plan = relationship("Plan", back_populates="subscriptions", lazy="joined")
     user = relationship("User", back_populates="subscriptions", lazy="joined")

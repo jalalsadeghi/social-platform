@@ -17,7 +17,7 @@ from sqlalchemy.orm import joinedload
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/register", response_model=schemas.Token)
+@router.post("/auth/register", response_model=schemas.Token)
 async def register(user: schemas.UserCreate, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).where(User.email == user.email))
     db_user = result.scalars().first()
