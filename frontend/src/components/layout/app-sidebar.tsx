@@ -57,7 +57,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     navMain.push({ title: "Roles", url: "/roles", icon: UserCog });
   }
   if (user?.role.permissions.plan?.read) {
-    navMain.push({ title: "Plans", url: "/plans", icon: Command }); // می‌توانید از آیکون مناسب دیگری نیز استفاده کنید
+    navMain.push({ title: "Plans", url: "/plans", icon: Command });
   }
   
   return (
