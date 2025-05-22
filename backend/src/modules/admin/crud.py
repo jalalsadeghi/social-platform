@@ -35,6 +35,13 @@ async def get_roles(db: AsyncSession):
     result = await db.execute(select(Role))
     return result.scalars().all()
 
+async def create_role(db: AsyncSession, role_data):
+    new_role = Role(**role_data.dict())
+    db.add(new_role)
+    await db.commit()
+    await db.refresh(new_role)
+    return new_role
+
 async def update_role(db: AsyncSession, role_id: uuid.UUID, data):
     result = await db.execute(select(Role).where(Role.id == role_id))
     db_role = result.scalars().first()

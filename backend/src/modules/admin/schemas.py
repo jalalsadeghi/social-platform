@@ -20,6 +20,11 @@ class RoleOut(BaseModel):
     name: str
     permissions: dict
 
+class RoleCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    permissions: dict
+    
 class RoleUpdate(BaseModel):
     name: Optional[str]
     permissions: Optional[dict]

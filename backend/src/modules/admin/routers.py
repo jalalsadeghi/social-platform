@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from modules.admin import schemas, crud
+from core.dependencies import get_current_admin
 from typing import List
 from uuid import UUID
 
@@ -24,6 +25,13 @@ async def update_user(user_id: UUID, data: schemas.UserUpdate, db: AsyncSession 
 @router.get("/roles", response_model=List[schemas.RoleOut])
 async def read_roles(db: AsyncSession = Depends(get_db)):
     return await crud.get_roles(db)
+
+@router.post("/roles", response_model=schemas.RoleOut)
+async def create_role(role: schemas.RoleCreate, db: AsyncSession = Depends(get_db), admin=Depends(get_current_admin)):
+    existing_roles = await crud.get_roles(db)
+    if any(r.name == role.name for r in existing_roles):
+        raise HTTPException(status_code=400, detail="Role already exists")
+    return await crud.create_role(db, role)
 
 @router.put("/roles/{role_id}", response_model=schemas.RoleOut)
 async def update_role(role_id: UUID, data: schemas.RoleUpdate, db: AsyncSession = Depends(get_db)):

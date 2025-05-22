@@ -1,25 +1,16 @@
 # src/modules/platform/instagram_bot/routers.py
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
+from core.dependencies import get_current_user
 from .services.secure_credentials import (
     store_social_credentials,
     get_social_credentials
 )
 from .services.instagram_client import login_instagram
-from modules.auth.utils import verify_access_token
-
-router = APIRouter(prefix="/instagram-bot", tags=["Instagram Bot"])
-
-# مدل pydantic برای ذخیره کردن credential
 from pydantic import BaseModel
 
-async def get_current_user(request: Request):
-    token = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized")
-    user_id = verify_access_token(token.replace("Bearer ", ""))
-    return user_id
+router = APIRouter(prefix="/instagram-bot", tags=["Instagram Bot"])
 
 class InstagramCredential(BaseModel):
     username: str
@@ -28,14 +19,13 @@ class InstagramCredential(BaseModel):
 @router.post("/store-credentials")
 async def store_credentials(
     credentials: InstagramCredential,
-    request: Request,
+    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    user_id = await get_current_user(request)
     try:
         await store_social_credentials(
             db=db,
-            user_id=user_id,
+            user_id=current_user.id,
             platform="instagram",
             identifier=credentials.username,
             credentials={"username": credentials.username, "password": credentials.password},
@@ -48,12 +38,11 @@ async def store_credentials(
 
 @router.get("/get-credentials")
 async def retrieve_credentials(
-    request: Request,
+    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    user_id = await get_current_user(request)
     try:
-        creds = await get_social_credentials(db=db, user_id=user_id, platform="instagram")
+        creds = await get_social_credentials(db=db, user_id=current_user.id, platform="instagram")
         return {"credentials": creds}
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -61,14 +50,13 @@ async def retrieve_credentials(
 
 @router.post("/test-login")
 async def test_instagram_login(
-    request: Request,
+    current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    user_id = await get_current_user(request)
     try:
-        creds = await get_social_credentials(db=db, user_id=user_id, platform="instagram")
+        creds = await get_social_credentials(db=db, user_id=current_user.id, platform="instagram")
         result = await login_instagram(username=creds["username"], password=creds["password"])
-        
+
         if result["success"]:
             return {"message": "Login successful", "cookies": result["cookies"]}
         else:
