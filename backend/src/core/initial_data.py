@@ -5,6 +5,19 @@ from sqlalchemy.future import select
 from modules.user.models import Role, User
 from modules.auth.utils import get_password_hash
 
+
+ADMIN_PERMISSIONS = {
+    "plan": {"read": True, "create": True, "delete": True, "update": True},
+    "user": {"read": True, "create": True, "delete": True, "update": True},
+    "product": {"read": True, "create": True, "delete": True, "update": True},
+    "role": {"read": True, "create": True, "delete": True, "update": True}
+}
+
+USER_PERMISSIONS = {
+    "product": {"read": True, "create": True, "delete": True, "update": True}
+}
+
+
 async def create_initial_data(db: AsyncSession):
     # بررسی وجود نقش‌ها
     result = await db.execute(select(Role).where(Role.name.in_(["user", "admin"])))
@@ -13,16 +26,25 @@ async def create_initial_data(db: AsyncSession):
 
     # نقش‌های لازم
     roles_to_create = []
-    for role_name in ["user", "admin"]:
-        if role_name not in existing_role_names:
-            roles_to_create.append(
-                Role(
-                    id=uuid.uuid4(),
-                    name=role_name,
-                    description=f"{role_name.capitalize()} role",
-                    permissions={}
-                )
+    if "user" not in existing_role_names:
+        roles_to_create.append(
+            Role(
+                id=uuid.uuid4(),
+                name="user",
+                description="User role",
+                permissions=USER_PERMISSIONS
             )
+        )
+
+    if "admin" not in existing_role_names:
+        roles_to_create.append(
+            Role(
+                id=uuid.uuid4(),
+                name="admin",
+                description="Admin role",
+                permissions=ADMIN_PERMISSIONS
+            )
+        )
 
     db.add_all(roles_to_create)
     await db.commit()
