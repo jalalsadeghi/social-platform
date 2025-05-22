@@ -56,6 +56,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   if (user?.role.permissions.role?.read) {
     navMain.push({ title: "Roles", url: "/roles", icon: UserCog });
   }
+  if (user?.role.permissions.plan?.read) {
+    navMain.push({ title: "Plans", url: "/plans", icon: Command }); // می‌توانید از آیکون مناسب دیگری نیز استفاده کنید
+  }
   
   return (
     <Sidebar {...props}>
@@ -79,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            <NavMain items={navMain} /> {/* اینجا اصلاح شد */}
+            <NavMain items={navMain} />
           </SidebarMenu>
         </SidebarGroup>
         <NavSecondary items={data.navSecondary} className="mt-auto" />

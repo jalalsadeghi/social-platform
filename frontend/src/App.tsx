@@ -7,6 +7,7 @@ import RegisterPage from '@/pages/auth/RegisterPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import ProductPage from '@/pages/dashboard/ProductPage';
 import RolesPage from '@/pages/dashboard/RolesPage';
+import PlanPage from '@/pages/dashboard/PlanPage';
 
 function App() {
   return (
@@ -24,6 +25,9 @@ function App() {
 
           <Route element={<ProtectedRoute module="role" action="read" />}>
             <Route path="/roles" element={<RolesPage />} />
+          </Route>
+          <Route element={<ProtectedRoute module="plan" action="read" />}>
+            <Route path="/plans" element={<PlanPage />} />
           </Route>
         </Route>
       </Route>
