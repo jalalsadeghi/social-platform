@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { scrapeProduct } from "@/services/scraping";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 interface Media {
   id?: string;
@@ -29,6 +31,9 @@ interface Props {
     description?: string;
     ai_content?: string;
     media?: Media[];
+    status?: "pending" | "ready" | "processing" | "posted" | "failed";
+    priority?: number;
+    scheduled_time?: string;
   };
   open: boolean;
   onClose: () => void;
@@ -41,8 +46,6 @@ const isValidUrl = (url: string) => {
     return false;
   }
 };
-
-
 
 export const ProductDialog: React.FC<Props> = ({
   productId,
@@ -63,6 +66,9 @@ export const ProductDialog: React.FC<Props> = ({
   const [newMediaFiles, setNewMediaFiles] = useState<File[]>([]);
   const [urlError, setUrlError] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+  const [priority, setPriority] = useState(0);
+  const [scheduledTime, setScheduledTime] = useState<Date | null>(null);
 
   useEffect(() => {
     if (initialData) {
@@ -74,6 +80,9 @@ export const ProductDialog: React.FC<Props> = ({
       });
 
       setExistingMedia(initialData.media || []);
+      setIsReady(initialData.status === "ready");
+      setPriority(initialData.priority || 0);
+      setScheduledTime(initialData.scheduled_time ? new Date(initialData.scheduled_time) : null);
     }
   }, [initialData]);
 
@@ -92,6 +101,8 @@ export const ProductDialog: React.FC<Props> = ({
     });
     setExistingMedia([]);
     setNewMediaFiles([]);
+    setIsReady(false);
+    setPriority(0);
   };
 
   const handleSubmit = async () => {
@@ -110,9 +121,14 @@ export const ProductDialog: React.FC<Props> = ({
       })
     );
 
+    const updatedPriority = isReady ? 1 : priority;
+
     const productData = {
       ...formData,
       media: [...existingMedia, ...uploadedMedia],
+      status: isReady ? "ready" : "pending",
+      priority: updatedPriority,
+      scheduled_time: scheduledTime?.toISOString(),
     };
 
     productId
@@ -169,12 +185,6 @@ export const ProductDialog: React.FC<Props> = ({
           </DialogTitle>
         </DialogHeader>
 
-        {/* <Input
-          value={formData.product_url}
-          onChange={handleUrlChange}
-          placeholder="Product URL (optional)"
-          className={urlError ? "border-2 border-red-500" : ""}
-        /> */}
         <div className="flex gap-2">
           <Input
             value={formData.product_url}
@@ -193,18 +203,31 @@ export const ProductDialog: React.FC<Props> = ({
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
           placeholder="Title"
         />
-
         <Textarea
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           placeholder="Description"
         />
-
         <Textarea
           value={formData.ai_content}
           onChange={(e) => setFormData({ ...formData, ai_content: e.target.value })}
           placeholder="AI Content"
         />
+
+        {/* وضعیت ready */}
+        <div className="flex items-center space-x-2">
+          <Switch 
+            id="status-ready"
+            checked={isReady}
+            onCheckedChange={(checked) => {
+              setIsReady(checked);
+              setPriority(checked ? 1 : priority);
+              setScheduledTime(checked ? new Date() : null);
+            }}
+            className="data-[state=checked]:!bg-gray-900 data-[state=unchecked]:!bg-gray-200 w-9 h-6 rounded-full"
+          />
+          <Label htmlFor="status-ready">Set Status to {isReady ? "Ready" : "Pending"}</Label>
+        </div>
 
         <ProductMediaUploader
           existingMedia={existingMedia}

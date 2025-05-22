@@ -87,14 +87,12 @@ async def get_scheduled_products(db: AsyncSession, limit: int = 10):
     )
     return result.scalars().all()
 
-# async def set_product_ready(db: AsyncSession, product_id: UUID, user_id: UUID, scheduled_time: Optional[datetime] = None):
-#     db_product = await get_product(db, product_id, user_id)
-#     if not db_product:
-#         return None
-
-#     db_product.status = QueueStatus.ready
-#     db_product.scheduled_time = scheduled_time or datetime.now(timezone.utc)
-
-#     await db.commit()
-#     await db.refresh(db_product)
-#     return db_product
+async def update_product_status(db: AsyncSession, product_id: UUID, user_id: UUID, status: QueueStatus):
+    db_product = await get_product(db, product_id, user_id)
+    if not db_product:
+        return None
+    
+    db_product.status = status
+    await db.commit()
+    await db.refresh(db_product)
+    return db_product

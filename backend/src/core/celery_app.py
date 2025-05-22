@@ -14,7 +14,7 @@ celery_app = Celery(
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
-        "modules.platform.instagram_bot.tasks.instagram_tasks"
+        "modules.platform.instagram_bot.tasks.scheduler"
     ]
 )
 
@@ -30,8 +30,8 @@ celery_app.conf.update(
     beat_schedule_filename='/tmp/celerybeat-schedule',
     beat_schedule={
         "publish-instagram-posts-every-minute": {
-            "task": "modules.platform.instagram_bot.tasks.instagram_tasks.publish_scheduled_posts",
-            "schedule": crontab(minute="*/1"),  # هر دقیقه برای تست
+            "task": "modules.platform.instagram_bot.tasks.scheduler.schedule_test_call",
+            "schedule": crontab(hour=6, minute=0),  # هر دقیقه برای تست
         },
     }
 )

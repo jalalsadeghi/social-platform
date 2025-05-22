@@ -3,6 +3,7 @@ from pydantic import BaseModel, UUID4, HttpUrl
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum
+from .models import QueueStatus
 
 class MediaType(str, Enum):
     image = "image"
@@ -42,10 +43,13 @@ class ProductCreate(ProductBase):
 
 class ProductUpdate(ProductBase):
     media: Optional[List[MediaCreate]] = []
+    status: Optional[QueueStatus] = None
+    priority: Optional[int] = None
+    scheduled_time: Optional[datetime] = None
 
 class ProductOut(ProductBase):
     id: UUID4
-    status: str
+    status: QueueStatus
     priority: int
     scheduled_time: Optional[datetime]
     created_at: datetime

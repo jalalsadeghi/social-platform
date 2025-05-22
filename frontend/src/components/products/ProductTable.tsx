@@ -127,6 +127,7 @@ export const ProductTable = () => {
               <TableHead>Views</TableHead>
               <TableHead>Likes</TableHead>
               <TableHead>Comments</TableHead>
+              <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -153,6 +154,7 @@ export const ProductTable = () => {
                 >
                   {product.instagram_stats?.comments || 0}
                 </TableCell>
+                <TableCell>{product.status}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <button
                     onClick={() => handleEditClick(product)}
