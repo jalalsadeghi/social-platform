@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import type { Product } from "@/services/product";
+import api from "@/services/api";
 
 export const ProductTable = () => {
   const { productsQuery, deleteMutation } = useProducts();
@@ -74,6 +75,8 @@ export const ProductTable = () => {
       </div>
     );
   }
+
+  const baseURL = api.defaults.baseURL;
 
   return (
     <>
@@ -136,7 +139,7 @@ export const ProductTable = () => {
               <TableRow key={product.id}>
                 <TableCell>
                   <img
-                    src={product.media[0]?.local_path}
+                    src={product.media[0]?.local_path ? `${baseURL}/${product.media[0]?.local_path}` : product.media[0]?.media_url}
                     alt={product.title}
                     className="w-12 h-12 object-cover rounded-md"
                   />

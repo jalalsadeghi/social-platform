@@ -1,6 +1,7 @@
 // src/components/products/ProductMediaUploader.tsx
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import api from "@/services/api";
 
 interface Media {
   id?: string;
@@ -33,6 +34,8 @@ export const ProductMediaUploader: React.FC<Props> = ({
     return () => previewUrls.forEach(URL.revokeObjectURL);
   }, [previewUrls]);
 
+  const baseURL = api.defaults.baseURL;
+
   return (
     <div className="space-y-4">
       <input
@@ -52,12 +55,12 @@ export const ProductMediaUploader: React.FC<Props> = ({
           <div key={media.media_url} className="relative">
             {media.media_type === "video" ? (
               <video 
-                src={media.local_path ? `${import.meta.env.VITE_BACKEND_URL}/${media.local_path}` : media.media_url} 
+                src={media.local_path ? `${baseURL}/${media.local_path}` : media.media_url} 
                 className="h-20 w-auto" controls 
               />
             ) : (
               <img 
-                src={media.local_path ? `${import.meta.env.VITE_BACKEND_URL}/${media.local_path}` : media.media_url} 
+                src={media.local_path ? `${baseURL}/${media.local_path}` : media.media_url} 
                 className="h-20 w-auto" 
               />
             )}

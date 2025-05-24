@@ -159,6 +159,7 @@ export const ProductDialog: React.FC<Props> = ({
     setIsScraping(true);
     try {
       const scrapedData = await scrapeProduct(formData.product_url);
+
       setFormData(prev => ({
         ...prev,
         title: scrapedData.title || prev.title,
@@ -166,21 +167,68 @@ export const ProductDialog: React.FC<Props> = ({
         ai_content: scrapedData.ai_content || prev.ai_content,
       }));
 
-      const fetchedMedia = scrapedData.media_urls.map((url) => ({
-        media_url: url,
-        media_type: url.match(/\.(mp4|mov)$/i) ? "video" as const : "image" as const,
-        local_path: undefined,
-      }));
+      const fetchedMediaFiles = await Promise.all(
+        scrapedData.media_urls.map(async (url) => {
+          const response = await fetch(url);
+          const blob = await response.blob();
 
-      setExistingMedia(prev => [...prev, ...fetchedMedia]);
+          const mimeType = blob.type || "image/jpeg"; // fallback برای mime-type نامشخص
+          const filenameExtension = mimeType.split('/')[1] || 'jpg';
+          const filename = `image_${Date.now()}.${filenameExtension}`;
 
-      toast.success("Scraping completed successfully.");
+          const file = new File([blob], filename, { type: mimeType });
+
+          const { url: uploadedUrl, local_path } = await uploadFile(file);
+
+          return {
+            media_url: uploadedUrl,
+            media_type: mimeType.startsWith("video") ? "video" as const : "image" as const,
+            local_path,
+          };
+        })
+      );
+
+      setExistingMedia(prev => [...prev, ...fetchedMediaFiles]);
+      toast.success("Scraping completed and media uploaded successfully.");
     } catch (error) {
       toast.error(`Scraping failed: ${error}`);
     } finally {
       setIsScraping(false);
     }
   };
+
+
+  // const handleScrape = async () => {
+  //   if (!formData.product_url || !isValidUrl(formData.product_url)) {
+  //     setUrlError(true);
+  //     return;
+  //   }
+
+  //   setIsScraping(true);
+  //   try {
+  //     const scrapedData = await scrapeProduct(formData.product_url);
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       title: scrapedData.title || prev.title,
+  //       description: scrapedData.description || prev.description,
+  //       ai_content: scrapedData.ai_content || prev.ai_content,
+  //     }));
+
+  //     const fetchedMedia = scrapedData.media_urls.map((url) => ({
+  //       media_url: url,
+  //       media_type: url.match(/\.(mp4|mov)$/i) ? "video" as const : "image" as const,
+  //       local_path: undefined,
+  //     }));
+
+  //     setExistingMedia(prev => [...prev, ...fetchedMedia]);
+
+  //     toast.success("Scraping completed successfully.");
+  //   } catch (error) {
+  //     toast.error(`Scraping failed: ${error}`);
+  //   } finally {
+  //     setIsScraping(false);
+  //   }
+  // };
 
   const handleRemoveExistingMedia = (media_url: string) => {
     setExistingMedia((prev) => prev.filter((media) => media.media_url !== media_url));
