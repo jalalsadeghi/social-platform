@@ -42,6 +42,7 @@ class Media(Base):
     product_id = Column(UUID(as_uuid=True), ForeignKey('product.id', ondelete='CASCADE'), nullable=False)
     media_url = Column(String, nullable=False)
     media_type = Column(Enum('image', 'video', name='media_type_enum'), nullable=False)
+    local_path = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     product = relationship("Product", back_populates="media", lazy="selectin")

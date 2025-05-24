@@ -12,6 +12,7 @@ class MediaType(str, Enum):
 class MediaBase(BaseModel):
     media_url: HttpUrl
     media_type: MediaType
+    local_path: Optional[str]
 
 class MediaCreate(MediaBase):
     pass

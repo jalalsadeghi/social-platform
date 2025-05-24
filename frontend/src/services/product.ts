@@ -15,7 +15,8 @@ export interface Product {
   media: {
     id: string;
     media_url: string;
-    media_type: 'image' | 'video';
+    local_path?: string;
+    media_type: 'image' | 'video'; 
     created_at: string;
   }[];
   instagram_stats?: {
@@ -31,7 +32,11 @@ export interface ProductCreate {
   title: string;
   description?: string;
   ai_content?: string;
-  media: { media_url: string; media_type: 'image' | 'video' }[];
+  media: { 
+    media_url: string; 
+    local_path?: string;
+    media_type: 'image' | 'video';
+  }[];
 }
 
 export interface ProductUpdate extends Partial<ProductCreate> {}

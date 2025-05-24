@@ -38,7 +38,14 @@ async def create_product(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    return await crud.create_product(db, product, user_id=current_user.id)
+    print("Received product data:", product.dict())  # <-- اضافه کردن پرینت برای دیباگ
+    try:
+        result = await crud.create_product(db, product, user_id=current_user.id)
+        print("Created product:", result.id)  # برای اطمینان از ساخته شدن محصول
+        return result
+    except Exception as e:
+        print("Error creating product:", e)
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/{product_id}", response_model=schemas.ProductOut)
 async def update_product(

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 interface Media {
   id?: string;
   media_url: string;
+  local_path?: string;
   media_type: "image" | "video";
 }
 
@@ -50,20 +51,25 @@ export const ProductMediaUploader: React.FC<Props> = ({
         {existingMedia.map((media) => (
           <div key={media.media_url} className="relative">
             {media.media_type === "video" ? (
-              <video src={media.media_url} className="h-20 w-auto" controls />
+              <video 
+                src={media.local_path ? `${import.meta.env.VITE_BACKEND_URL}/${media.local_path}` : media.media_url} 
+                className="h-20 w-auto" controls 
+              />
             ) : (
-              <img src={media.media_url} className="h-20 w-auto" />
+              <img 
+                src={media.local_path ? `${import.meta.env.VITE_BACKEND_URL}/${media.local_path}` : media.media_url} 
+                className="h-20 w-auto" 
+              />
             )}
             <button
               type="button"
-              className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 xdelete"
+              className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5"
               onClick={() => onRemoveExisting?.(media.media_url)}
             >
               &times;
             </button>
           </div>
         ))}
-
         {previewUrls.map((url) => (
           <img key={url} src={url} className="h-20 w-auto opacity-70" />
         ))}

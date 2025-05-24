@@ -17,6 +17,7 @@ from modules.ai.routers import router as ai_router
 from modules.product.routers import router as product_router
 from modules.upload.routers import router as upload_router
 from modules.platform.instagram_bot.routers import router as instagram_bot_router
+
 # Logger setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

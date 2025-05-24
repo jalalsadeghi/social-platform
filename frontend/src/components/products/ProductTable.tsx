@@ -136,7 +136,7 @@ export const ProductTable = () => {
               <TableRow key={product.id}>
                 <TableCell>
                   <img
-                    src={product.media[0]?.media_url}
+                    src={product.media[0]?.local_path}
                     alt={product.title}
                     className="w-12 h-12 object-cover rounded-md"
                   />
@@ -186,6 +186,7 @@ export const ProductTable = () => {
             media: selectedProduct.media.map(m => ({
               id: m.id,
               media_url: m.media_url,
+              local_path: m.local_path,
               media_type: m.media_type
             }))
           }}

@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 interface Media {
   id?: string;
   media_url: string;
+  local_path?: string;
   media_type: "image" | "video";
 }
 
@@ -113,23 +114,33 @@ export const ProductDialog: React.FC<Props> = ({
 
     const uploadedMedia = await Promise.all(
       newMediaFiles.map(async (file) => {
-        const media_url = await uploadFile(file);
+        const { url, local_path } = await uploadFile(file);
         return {
-          media_url,
+          media_url: url,
           media_type: file.type.startsWith("video") ? "video" as const : "image" as const,
+          local_path: local_path,
         };
       })
     );
+    
+    const cleanedExistingMedia = existingMedia.map(({ media_url, media_type, local_path }) => ({
+      media_url,
+      media_type,
+      local_path: local_path,
+    }));   
+
 
     const updatedPriority = isReady ? 1 : priority;
-
+    
     const productData = {
       ...formData,
-      media: [...existingMedia, ...uploadedMedia],
+      media: [...cleanedExistingMedia, ...uploadedMedia],
       status: isReady ? "ready" : "pending",
       priority: updatedPriority,
       scheduled_time: scheduledTime?.toISOString(),
     };
+    
+    console.log("productData:", productData);
 
     productId
       ? updateMutation.mutate({ id: productId, data: productData })
@@ -158,6 +169,7 @@ export const ProductDialog: React.FC<Props> = ({
       const fetchedMedia = scrapedData.media_urls.map((url) => ({
         media_url: url,
         media_type: url.match(/\.(mp4|mov)$/i) ? "video" as const : "image" as const,
+        local_path: undefined,
       }));
 
       setExistingMedia(prev => [...prev, ...fetchedMedia]);
