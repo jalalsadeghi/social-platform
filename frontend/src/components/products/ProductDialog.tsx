@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useProducts } from "@/hooks/useProducts";
 import { uploadFile } from "@/services/upload";
-import { ProductMediaUploader } from "./ProductMediaUploader";
+import { ProductMediaUploader, generateVideoThumbnail,} from "./ProductMediaUploader";
 import {
   Dialog,
   DialogContent,
@@ -107,31 +107,40 @@ export const ProductDialog: React.FC<Props> = ({
   };
 
   const handleSubmit = async () => {
-    if (formData.product_url && !isValidUrl(formData.product_url)) {
-      setUrlError(true);
-      return;
-    }
-
     const uploadedMedia = await Promise.all(
       newMediaFiles.map(async (file) => {
+        // 1. آپلود فایل اصلی
         const { url, local_path } = await uploadFile(file);
+
+        // اگر ویدئو باشد thumbnail را آپلود می‌کنیم
+        if (file.type.startsWith("video")) {
+          const thumbnailBlobUrl = await generateVideoThumbnail(file);
+          const thumbnailFile = await fetch(thumbnailBlobUrl).then(r => r.blob()).then(blob => new File([blob], "thumbnail.png", { type: "image/png" }));
+          const { local_path: thumbnailPath } = await uploadFile(thumbnailFile);
+
+          return {
+            media_url: url,               // URL ویدیو
+            media_type: "video" as const,
+            local_path: thumbnailPath,    // thumbnail URL
+          };
+        }
+
         return {
-          media_url: url,
-          media_type: file.type.startsWith("video") ? "video" as const : "image" as const,
+          media_url: url,                     // URL تصویر
+          media_type: "image" as const,
           local_path: local_path,
         };
       })
     );
-    
-    const cleanedExistingMedia = existingMedia.map(({ media_url, media_type, local_path }) => ({
-      media_url,
-      media_type,
-      local_path: local_path,
-    }));   
-
 
     const updatedPriority = isReady ? 1 : priority;
-    
+
+    const cleanedExistingMedia = existingMedia.map((media) => ({
+      media_url: media.media_url,
+      media_type: media.media_type,
+      local_path: media.local_path,
+    }));
+
     const productData = {
       ...formData,
       media: [...cleanedExistingMedia, ...uploadedMedia],
@@ -141,7 +150,6 @@ export const ProductDialog: React.FC<Props> = ({
     };
     
     console.log("productData:", productData);
-
     productId
       ? updateMutation.mutate({ id: productId, data: productData })
       : createMutation.mutate(productData);
@@ -172,7 +180,7 @@ export const ProductDialog: React.FC<Props> = ({
           const response = await fetch(url);
           const blob = await response.blob();
 
-          const mimeType = blob.type || "image/jpeg"; // fallback برای mime-type نامشخص
+          const mimeType = blob.type || "image/jpeg"; 
           const filenameExtension = mimeType.split('/')[1] || 'jpg';
           const filename = `image_${Date.now()}.${filenameExtension}`;
 

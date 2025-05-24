@@ -23,9 +23,7 @@ async def print(product: ProductCreate):
     return product.media
 
 async def create_product(db: AsyncSession, product: ProductCreate, user_id: uuid.UUID):
-    print(f"File product: {product}")
     product_data = product.dict(exclude={"media"})
-    print(f"File product_data: {product_data}")
     if product_data.get("product_url"):
         product_data["product_url"] = str(product_data["product_url"])
 
@@ -33,40 +31,16 @@ async def create_product(db: AsyncSession, product: ProductCreate, user_id: uuid
     db.add(db_product)
     await db.commit()
     await db.refresh(db_product)
-    print(f"File product.media: {product.media}")
     for media_item in product.media:
         media_data = media_item.dict()
         media_data["media_url"] = str(media_data["media_url"])
         media_data["local_path"] = str(media_data["local_path"])
-        print(f"media_data: {media_data}")
-        print(f"File file_url: {media_data['media_url']}")
-        print(f"File file_path: {media_data['local_path']}")
         db_media = Media(**media_data, product_id=db_product.id)
         db.add(db_media)
 
     await db.commit()
     await db.refresh(db_product)
     return db_product
-# async def create_product(db: AsyncSession, product: ProductCreate, user_id: uuid.UUID):
-#     product_data = product.dict(exclude={"media"})
-#     if product_data.get("product_url"):
-#         product_data["product_url"] = str(product_data["product_url"])
-
-#     db_product = Product(**product_data, user_id=user_id)
-#     db.add(db_product)
-#     await db.commit()
-#     await db.refresh(db_product)
-
-#     for media_item in product.media:
-#         media_data = media_item.dict()
-#         media_data["media_url"] = str(media_data["media_url"]) 
-#         db_media = Media(**media_data, product_id=db_product.id)
-#         db.add(db_media)
-
-#     await db.commit()
-#     await db.refresh(db_product)
-#     return db_product
-
 
 async def delete_product(db: AsyncSession, product_id: uuid.UUID, user_id: uuid.UUID):
     db_product = await get_product(db, product_id, user_id)
@@ -96,6 +70,7 @@ async def update_product(db: AsyncSession, product_id: UUID, product_update: Pro
             Media(
                 media_url=str(item.media_url), 
                 media_type=item.media_type,
+                local_path=str(item.local_path) if item.local_path else None,
                 product_id=db_product.id
             ) 
             for item in product_update.media

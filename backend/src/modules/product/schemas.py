@@ -10,7 +10,7 @@ class MediaType(str, Enum):
     video = "video"
 
 class MediaBase(BaseModel):
-    media_url: HttpUrl
+    media_url: str #HttpUrl
     media_type: MediaType
     local_path: Optional[str]
 
