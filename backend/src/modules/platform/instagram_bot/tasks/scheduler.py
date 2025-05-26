@@ -4,7 +4,7 @@ from core.celery_app import celery_app
 from random import randint
 import time
 # from .instagram_tasks import publish_scheduled_posts
-from .DailyTaskExecutor import daily_tasks
+from .DailyTaskExecutor import execute_daily_tasks
 import asyncio
 
 # @celery_app.task
@@ -23,4 +23,5 @@ import asyncio
 
 @celery_app.task
 def schedule_test_call(user_id):
-    asyncio.run(daily_tasks(user_id))
+    """Execute daily tasks for testing."""
+    return asyncio.run(execute_daily_tasks(user_id))

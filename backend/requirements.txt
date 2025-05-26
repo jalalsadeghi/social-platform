@@ -24,3 +24,5 @@ playwright==1.44.0
 aiohttp
 cryptography
 celery[redis]==5.4.0
+aiofiles
+python-ffmpeg==2.0.0

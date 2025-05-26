@@ -6,12 +6,15 @@ COPY ./requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && pip install -r /app/requirements.txt \
     && playwright install chromium --with-deps
 
-# اضافه کردن فونت‌ها و ابزارهای مرورگر (طبیعی‌سازی بیشتر)
+# Install fonts, browser tools, and ffmpeg
 RUN apt-get update && apt-get install -y \
     fonts-freefont-ttf \
     fonts-liberation \
     fonts-dejavu \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
+    
+RUN playwright install chrome
 
 COPY ./src /app/src
 COPY ./tests /app/tests
