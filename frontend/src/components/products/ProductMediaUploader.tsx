@@ -1,4 +1,4 @@
-// ProductMediaUploader.tsx
+// frontend/src/components/products/ProductMediaUploader.tsx
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import api from "@/services/api";

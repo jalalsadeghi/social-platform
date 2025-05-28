@@ -185,14 +185,22 @@ export const ProductDialog: React.FC<Props> = ({
           const filename = `image_${Date.now()}.${filenameExtension}`;
 
           const file = new File([blob], filename, { type: mimeType });
+          
+          if(!scrapedData.local_path) {
+            const { url: uploadedUrl, local_path } = await uploadFile(file);
 
-          const { url: uploadedUrl, local_path } = await uploadFile(file);
-
-          return {
-            media_url: uploadedUrl,
-            media_type: mimeType.startsWith("video") ? "video" as const : "image" as const,
-            local_path,
-          };
+            return {
+              media_url: uploadedUrl,
+              media_type: mimeType.startsWith("video") ? "video" as const : "image" as const,
+              local_path,
+            };
+          }else{
+            return {
+              media_url: url,
+              media_type: mimeType.startsWith("video") ? "video" as const : "image" as const,
+              local_path: scrapedData.local_path,
+            };
+          }
         })
       );
 

@@ -5,6 +5,7 @@ export interface ScrapeResult {
   description: string;
   ai_content: string;
   media_urls: string[];
+  local_path: string;
 }
 
 export const scrapeProduct = async (url: string): Promise<ScrapeResult> => {

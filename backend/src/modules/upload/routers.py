@@ -4,10 +4,11 @@ from fastapi.responses import JSONResponse
 from uuid import uuid4
 import shutil
 import os
+from core.config import settings
 
 router = APIRouter(prefix="/upload", tags=["upload"])
 
-UPLOAD_DIRECTORY = "uploads"
+UPLOAD_DIRECTORY = settings.UPLOAD_DIRECTORY
 
 if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)

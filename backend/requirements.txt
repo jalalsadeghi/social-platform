@@ -26,3 +26,4 @@ cryptography
 celery[redis]==5.4.0
 aiofiles
 python-ffmpeg==2.0.0
+yt-dlp==2025.5.26.232937.dev0
