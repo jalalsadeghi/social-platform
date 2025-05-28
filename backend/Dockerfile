@@ -1,20 +1,12 @@
-FROM python:3.12-slim
+FROM mcr.microsoft.com/playwright/python:v1.52.0-jammy
 
 WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
-RUN pip install --upgrade pip && pip install -r /app/requirements.txt \
-    && playwright install chromium --with-deps
 
-# Install fonts, browser tools, and ffmpeg
-RUN apt-get update && apt-get install -y \
-    fonts-freefont-ttf \
-    fonts-liberation \
-    fonts-dejavu \
-    ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
-    
-RUN playwright install chrome
+RUN apt-get update && apt-get install -y ffmpeg
+
+RUN pip install --upgrade pip && pip install -r /app/requirements.txt
 
 COPY ./src /app/src
 COPY ./tests /app/tests

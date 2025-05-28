@@ -11,12 +11,10 @@ bcrypt==4.0.1
 passlib[bcrypt]==1.7.4
 PyJWT==2.8.0
 python-jose==3.3.0
-sqlalchemy[asyncio]==2.0.30 
-aiosqlite==0.20.0 
+aiosqlite==0.20.0
 pytest==7.4.0
-pytest-asyncio==0.21.0 
+pytest-asyncio==0.21.0
 httpx==0.25.0
-fastapi[all]==0.111.0
 requests==2.32.3
 beautifulsoup4==4.12.3
 openai==1.33.0
@@ -27,3 +25,6 @@ celery[redis]==5.4.0
 aiofiles
 python-ffmpeg==2.0.0
 yt-dlp==2025.5.26.232937.dev0
+numpy==1.25.0
+opencv-python-headless==4.10.0.84
+moviepy==2.2.1
