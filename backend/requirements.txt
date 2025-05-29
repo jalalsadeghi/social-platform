@@ -28,3 +28,4 @@ yt-dlp==2025.5.26.232937.dev0
 numpy==1.25.0
 opencv-python-headless==4.10.0.84
 moviepy==2.2.1
+pydub==0.25.1
