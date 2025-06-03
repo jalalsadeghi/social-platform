@@ -17,7 +17,11 @@ from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.audio.AudioClip import CompositeAudioClip
 from moviepy.video.VideoClip import TextClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
-from .prompts import ai_caption_prompt, expertise_prompt, search_ai_caption_prompt, hashtag_prompt
+from .prompts import (ai_caption_prompt, 
+                      expertise_prompt, 
+                      search_ai_caption_prompt, 
+                      hashtag_prompt,
+                      chanel_name)
 import logging
 logging.basicConfig(level=logging.INFO)
 
@@ -29,17 +33,16 @@ if not os.path.exists(UPLOAD_DIRECTORY):
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 openai_model = settings.OPENAI_MODEL
 
-random_name = str(uuid4())
-
-language = "Persian" # Persian / English / German 
+language = "German" # Persian / English / German 
 
 
-async def extract_info_youtube(url: str):
+async def extract_info_youtube(url: str, random_name:str):
     random_name = os.urandom(8).hex()
 
     ydl_opts_video = {
-        'format': 'best[ext=mp4]',
-        'outtmpl': os.path.join(UPLOAD_DIRECTORY, f'{random_name}.%(ext)s'),
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': os.path.join(UPLOAD_DIRECTORY, f'{random_name}_initial.%(ext)s'),
+        'merge_output_format': 'mp4',
         'noplaylist': True,
         'quiet': False,
         'cookiefile': 'cookies.txt',
@@ -56,11 +59,15 @@ async def extract_info_youtube(url: str):
         with yt_dlp.YoutubeDL(ydl_opts_video) as ydl:
             info = ydl.extract_info(url, download=True)
 
+            if not info:
+                logging.error("yt_dlp returned None for video extraction.")
+                return None
+            
             title = info.get("title")
             description = info.get("description", "")
             comments = info.get("comments", [])
             thumbnail_url = info.get("thumbnail")
-            video_filename = f"{UPLOAD_DIRECTORY}/{random_name}.mp4"
+            video_filename = f"{UPLOAD_DIRECTORY}/{random_name}_initial.mp4"
             uploader = info.get("uploader", "")
             channel_url = info.get("channel_url", "")
 
@@ -92,15 +99,20 @@ async def extract_info_youtube(url: str):
                         channel_info = None
 
                 if channel_info:
-                    channel_description = channel_info.get("description", "")
                     entries = channel_info.get('entries', [])[:5]
-                    recent_videos = [
-                        {
-                            'title': entry.get('title', ''),
-                            'description': f"{entry.get('description', '')[:100]} ..."
-                        }
-                        for entry in entries
-                    ]
+                    # logging.info(f"Extracted entries: {entries}")
+                    try:
+                        recent_videos = [
+                            {
+                                'title': entry.get('title', ''),
+                                'description': f"{entry.get('description', '')[:100]} ..."
+                            }
+                            for entry in entries if entry and isinstance(entry, dict)
+                        ]
+                    except:
+                        print(f"Error entries")
+                else:
+                    logging.warning("Channel info not found or empty")
         else:
             logging.warning("No channel URL provided")
 
@@ -108,15 +120,18 @@ async def extract_info_youtube(url: str):
         logging.error(f"Extraction error: {e}")
         return None
 
-    # دانلود تصویر بندانگشتی
-    thumb_response = requests.get(thumbnail_url, stream=True)
-    thumb_ext = thumbnail_url.split('.')[-1].split('?')[0]
-    thumb_filename = f"{UPLOAD_DIRECTORY}/{random_name}.{thumb_ext}"
+    thumb_filename = ""
+    if thumbnail_url:
+        thumb_response = requests.get(thumbnail_url, stream=True)
+        thumb_ext = thumbnail_url.split('.')[-1].split('?')[0]
+        thumb_filename = f"{UPLOAD_DIRECTORY}/{random_name}.{thumb_ext}"
 
-    with open(thumb_filename, 'wb') as f:
-        for chunk in thumb_response.iter_content(chunk_size=8192):
-            f.write(chunk)
-
+        with open(thumb_filename, 'wb') as f:
+            for chunk in thumb_response.iter_content(chunk_size=8192):
+                f.write(chunk)
+    else:
+        logging.warning("No thumbnail URL provided.")
+    
     # مرتب‌سازی نظرات بر اساس تعداد لایک
     sorted_comments = sorted(comments, key=lambda c: c.get('like_count', 0), reverse=True)[:5]
     comments_text = "\n".join(
@@ -127,7 +142,7 @@ async def extract_info_youtube(url: str):
     )
 
     video_duration = VideoFileClip(video_filename).duration
-
+   
     return {
         'title': title,
         'description': description,
@@ -232,6 +247,7 @@ async def extract_key_frames(video_filename: str,
     vidcap.release()
     return key_frames
 
+
 async def extract_ai_caption(title: str, 
                              description: str, 
                              comments_text: str, 
@@ -266,18 +282,19 @@ async def extract_ai_caption(title: str,
     ]
 
     search_result = await generate_ai_content(search_prompt, "gpt-4o-mini-search-preview", int_max_tokens=500)
-    print(f"search_result: {search_result}")
+
     content_list = [{
         "type": "text",
         "text": (
             f"{title}\n\n"
             f"{description}\n\n"
+            "Updated search content:\n"
+            f"{search_result}\n\n"
             "Top comments on the video:\n"
             f"{comments_text}\n\n"
             "Description of the main channel where the video was published:\n"
             f"{channel_description}\n\n"
-            "Updated search content:\n"
-            f"{search_result}\n\n"
+            
         )
     }]
     
@@ -293,14 +310,14 @@ async def extract_ai_caption(title: str,
             "type": "text",
             "text": f"Frame {idx + 1}: from {start_time:.2f}s to {end_time:.2f}s, duration {duration:.2f}s"
         })
-        print(f"Info from Frame: {idx + 1}: from {start_time:.2f}s to {end_time:.2f}s, duration {duration:.2f}s")
+
         content_list.append({
             "type": "image_url",
             "image_url": {"url": frame["image_url"]}
         })
 
     max_words_allowed = int(video_duration * word_per_second)
-    print(f"video_duration: {video_duration:.2f}")       
+
     messages = [
         {
             "role": "system",
@@ -354,10 +371,10 @@ async def extract_ai_caption(title: str,
         }
     ]
     
-    ai_content = await generate_ai_content(messages_hashtag, openai_model, max_tokens)
+    ai_content = await generate_ai_content(messages_hashtag, openai_model, 300)
 
     return ai_caption, ai_content
-
+    
 
 async def generate_ai_content(messages: list, openai_model: str, int_max_tokens: int = 1500):
     """Generate content from AI based on provided messages. Adapts parameters based on model capabilities."""
@@ -384,11 +401,9 @@ async def generate_ai_content(messages: list, openai_model: str, int_max_tokens:
         print(f"[AI Error] {e}")
         return ""
 
-def generate_audio_from_script(ai_script: str):
-    ai_script = ai_script.replace('second]', 'seconds]')
+
+def generate_audio_from_script(ai_script: str, random_name):
     sections = re.split(r'\[P ([\d.]+) S\]', ai_script)
-    # print(f"ai_script: {ai_script}")
-    # print(f"sections: {sections}")
 
     final_audio = AudioSegment.empty()
 
@@ -403,28 +418,24 @@ def generate_audio_from_script(ai_script: str):
             )
             segment_audio = AudioSegment.from_file(BytesIO(audio_response.content), format="wav")
             final_audio += segment_audio
-            # print(f"text: {text}")
 
         if i + 1 < len(sections):
             pause_duration = float(sections[i + 1]) * 1000
             final_audio += AudioSegment.silent(duration=pause_duration)
             
-            # print(f"sections[i]: {pause_duration}")
-
     audio_filename = f"{UPLOAD_DIRECTORY}/{random_name}.wav"
     final_audio.export(audio_filename, format="wav")
 
     return audio_filename
 
 
-async def generate_video(audio_filename, video_filename, uploader):
+async def generate_video(audio_filename, video_filename, random_name):
     ai_audio_clip = AudioFileClip(audio_filename)
     video_clip = VideoFileClip(video_filename)
     video_duration = video_clip.duration
-    print(f"video_clip added to video. {video_clip.size}")
 
     font_path = 'src/core/assets/ARIALBD.TTF'
-    watermark_text =  #f"@{uploader}"
+    watermark_text =  chanel_name[language] #f"@{uploader}"
     watermark_clip = TextClip(
         text=watermark_text,
         font_size=14,
@@ -432,32 +443,42 @@ async def generate_video(audio_filename, video_filename, uploader):
         font=font_path,
         duration=video_duration 
     )
-    print(f"watermark_clip added to video. {watermark_clip.size}")
 
     position = (5, 5)
-    print(f"position added to video. {position}")
 
     watermark_clip = watermark_clip.with_position(position)
 
     video_mark = CompositeVideoClip([video_clip, watermark_clip])
-    print(f"video_mark added to video. {video_mark.size}")
 
-    original_audio = video_clip.audio.with_volume_scaled(0.1)
+    original_audio = video_clip.audio.with_volume_scaled(0.05)
     final_audio = CompositeAudioClip([original_audio, ai_audio_clip])
 
     final_video = video_mark.with_audio(final_audio)
-    print(f"final_video added to video. {final_video.size}")
 
-    final_video_filename = f"{UPLOAD_DIRECTORY}/{random_name}_final.mp4"
-    final_video.write_videofile(final_video_filename, codec='libx264', audio_codec='aac')
+    final_video_filename = f"{UPLOAD_DIRECTORY}/{random_name}.mp4"
+    # مهم: استفاده از تنظیمات بهتر برای افزایش کیفیت
+    final_video.write_videofile(
+        final_video_filename,
+        codec='libx264',
+        audio_codec='aac',
+        bitrate='5000k',            # افزایش بیت‌ریت (برای ویدئوهای FullHD و Shorts اینستاگرام مناسب است)
+        preset='slow',              # تنظیم کیفیت و فشرده‌سازی (slow یا medium)
+        threads=4,                  # استفاده بهینه از منابع CPU
+        fps=video_clip.fps,         # حفظ fps اصلی ویدئو
+        audio_bitrate='192k',       # افزایش کیفیت صدا
+        ffmpeg_params=[
+            "-vf", f"scale={video_clip.size[0]}:{video_clip.size[1]}"
+        ]
+    )
 
     return final_video_filename
     
 
 async def scrape_youtube_short(url: str) -> dict:
 
+    random_name = str(uuid4())
 
-    extract_info = await extract_info_youtube(url)
+    extract_info = await extract_info_youtube(url, random_name)
 
     expertise = await identifying_expertise(extract_info['channel_description'], 
                                             extract_info['recent_videos'],
@@ -480,18 +501,20 @@ async def scrape_youtube_short(url: str) -> dict:
                                                 )
 
     
-    audio_filename = generate_audio_from_script(ai_caption)
+    audio_filename = generate_audio_from_script(ai_caption, random_name)
 
-    final_video_filename = await generate_video(audio_filename, 
+    final_video_filename = []
+    final_video_filename.append(await generate_video(audio_filename, 
                                           extract_info['video_filename'], 
-                                          extract_info['uploader']
+                                          random_name
                                           )
+    )
 
-
-    ai_result = {
+    ai_result_print = {
         "title": extract_info['title'],
         "description": extract_info['description'],
-        "media_urls": extract_info['video_filename'],
+        "ai_content": ai_content,
+        "media_urls": final_video_filename,
         "local_path": extract_info['thumb_filename'],
         "uploader": extract_info['uploader'],
         "channel_url": extract_info['channel_url'],
@@ -500,9 +523,25 @@ async def scrape_youtube_short(url: str) -> dict:
         "recent_videos": extract_info['recent_videos'],
         "expertise": expertise,
         "ai_caption": ai_caption,
-        "ai_content": ai_content,
         "audio_path": audio_filename,
         "final_video_path": final_video_filename,
     }
+    print(ai_result_print)
 
+    ai_result = {
+        "title": extract_info['title'],
+        "description": extract_info['description'],
+        "ai_content": ai_content,
+        "media_urls": final_video_filename,
+        "local_path": extract_info['thumb_filename'],
+        # "uploader": extract_info['uploader'],
+        # "channel_url": extract_info['channel_url'],
+        # "channel_description": extract_info['channel_description'],
+        # "comments_text": extract_info['comments_text'],
+        # "recent_videos": extract_info['recent_videos'],
+        # "expertise": expertise,
+        # "ai_caption": ai_caption,
+        # "audio_path": audio_filename,
+        # "final_video_path": final_video_filename,
+    }
     return ai_result

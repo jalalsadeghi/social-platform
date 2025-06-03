@@ -6,7 +6,8 @@ COPY ./requirements.txt /app/requirements.txt
 
 RUN apt-get update && apt-get install -y ffmpeg
 
-RUN pip install --upgrade pip && pip install -r /app/requirements.txt
+RUN pip install --upgrade pip && pip install -r /app/requirements.txt \
+    && playwright install chromium chrome --with-deps
 
 COPY ./src /app/src
 COPY ./tests /app/tests
