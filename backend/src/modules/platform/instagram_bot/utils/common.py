@@ -55,12 +55,12 @@ async def safe_click(page, selector, name=None, max_attempts=3, timeout=15000, c
 
 async def screenshot(page, name, status:str = ""):
     if status == "error":
-        html_snapshot_path = f'uploads/screenshot_{name}_{status}_{timestamp}.html'
+        html_snapshot_path = f'uploads/{timestamp}_screenshot_{name}_{status}.html'
         with open(html_snapshot_path, 'w', encoding='utf-8') as f:
             f.write(await page.content())
         print(f"🛠️ Error snapshot saved: {html_snapshot_path}")
 
-    screenshot_path = f'uploads/screenshot_{name}_{status}_{timestamp}.png'
+    screenshot_path = f'uploads/{timestamp}_screenshot_{name}_{status}.png'
     await page.screenshot(path=screenshot_path)
 
 

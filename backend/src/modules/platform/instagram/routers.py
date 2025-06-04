@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from sqlalchemy.orm import Session
 from fastapi.responses import HTMLResponse
-from core.database import 
+from core.database import get_db
 from modules.platform.instagram import schemas, services, crud
 from modules.platform.instagram.models import InstagramIntegration
 from modules.auth.jwt import verify_token

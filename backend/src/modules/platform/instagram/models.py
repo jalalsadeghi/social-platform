@@ -42,3 +42,4 @@ class InstagramActionLog(Base):
     timestamp = Column(DateTime, default=func.now())
 
     integration = relationship("InstagramIntegration", back_populates="action_logs")
+

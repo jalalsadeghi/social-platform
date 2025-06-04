@@ -83,7 +83,7 @@ async def post_to_instagram(db, user_id, page):
 
 
     spinner_selector = 'img[alt="Spinner placeholder"][src*="ShFi4iY4Fd9.gif"]'
-    error_popup_selector = 'div[role="dialog"]:has-text("Something went wrong") button[aria-label="Close"]'
+    error_popup_selector = 'div[role="dialog"]:has-text("Something went wrong.") button[aria-label="Close"]'
     
     try:
         # منتظر Spinner با timeout کمتر (20 ثانیه)
@@ -109,6 +109,8 @@ async def post_to_instagram(db, user_id, page):
         print("✅ No error popup detected, continuing process.")
         await random_delay(1, 3)
         await screenshot(page, "220_wrong")
+
+    await screenshot(page, "223_successfully", "wrong", "error")
         
     await page.goto("https://www.instagram.com/ki.blick/")
     print("🎉 Post shared successfully.")

@@ -510,23 +510,23 @@ async def scrape_youtube_short(url: str) -> dict:
                                           )
     )
 
-    ai_result_print = {
-        "title": extract_info['title'],
-        "description": extract_info['description'],
-        "ai_content": ai_content,
-        "media_urls": final_video_filename,
-        "local_path": extract_info['thumb_filename'],
-        "uploader": extract_info['uploader'],
-        "channel_url": extract_info['channel_url'],
-        "channel_description": extract_info['channel_description'],
-        "comments_text": extract_info['comments_text'],
-        "recent_videos": extract_info['recent_videos'],
-        "expertise": expertise,
-        "ai_caption": ai_caption,
-        "audio_path": audio_filename,
-        "final_video_path": final_video_filename,
-    }
-    print(ai_result_print)
+    # ai_result_print = {
+    #     "title": extract_info['title'],
+    #     "description": extract_info['description'],
+    #     "ai_content": ai_content,
+    #     "media_urls": final_video_filename,
+    #     "local_path": extract_info['thumb_filename'],
+    #     "uploader": extract_info['uploader'],
+    #     "channel_url": extract_info['channel_url'],
+    #     "channel_description": extract_info['channel_description'],
+    #     "comments_text": extract_info['comments_text'],
+    #     "recent_videos": extract_info['recent_videos'],
+    #     "expertise": expertise,
+    #     "ai_caption": ai_caption,
+    #     "audio_path": audio_filename,
+    #     "final_video_path": final_video_filename,
+    # }
+    # print(ai_result_print)
 
     ai_result = {
         "title": extract_info['title'],

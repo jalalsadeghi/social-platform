@@ -3,10 +3,8 @@ from playwright.async_api import Page, BrowserContext
 from ..utils.common import get_headers, random_delay
 from .secure_credentials import get_cookies, store_cookies
 import random
-import time
 
 async def login_instagram(db, page: Page, context: BrowserContext, user_id, username, password):
-    timestamp = int(time.time())
     existing_cookies = await get_cookies(db, user_id, "instagram")
 
     try:
@@ -17,10 +15,6 @@ async def login_instagram(db, page: Page, context: BrowserContext, user_id, user
             await random_delay(5, 8)
             if await page.query_selector('nav'):
                 # Login with cookies was successful
-                
-                # screenshot_path = f'uploads/screenshot_01_login_cookie_ok_{timestamp}.png'
-                # await page.screenshot(path=screenshot_path)
-
                 return {"success": True, "cookies": existing_cookies}
             else:
                 print("Stored cookies invalid or expired, attempting fresh login.")
@@ -91,11 +85,7 @@ async def login_instagram(db, page: Page, context: BrowserContext, user_id, user
         # Getting cookies after successful login
         cookies = await context.cookies()
         await store_cookies(db, user_id, "instagram", cookies)
-        # screenshot_path = f'uploads/screenshot_01_login_ok_{timestamp}.png'
-        # await page.screenshot(path=screenshot_path)
         return {"success": True, "cookies": cookies}
 
     except Exception as e:
-        # screenshot_path = f'uploads/screenshot_01_login_error_{timestamp}.png'
-        # await page.screenshot(path=screenshot_path)
         return {"success": False, "error": str(e)}

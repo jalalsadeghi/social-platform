@@ -140,6 +140,7 @@ export const ProductTable = () => {
                 <TableCell>
                   <img
                     src={product.media[0]?.local_path ? `${baseURL}/${product.media[0]?.local_path}` : product.media[0]?.media_url}
+                        onClick={() => window.open(`${baseURL}/${product.media[0]?.media_url}`, '_blank')}
                     alt={product.title}
                     className="w-12 h-12 object-cover rounded-md"
                   />

@@ -76,15 +76,16 @@ export const ProductMediaUploader: React.FC<Props> = ({
         {existingMedia.map((media) => (
           <div key={media.media_url} className="relative">
             {media.media_type === "video" ? (
-              <video
+              <img
                 src={media.local_path ? `${baseURL}/${media.local_path}` : media.media_url}
                 className="h-20 w-auto"
-                controls
+                onClick={() => window.open(`${baseURL}/${media.media_url}`, '_blank')}
               />
             ) : (
               <img
                 src={media.local_path ? `${baseURL}/${media.local_path}` : media.media_url}
                 className="h-20 w-auto"
+                onClick={() => window.open(`${baseURL}/${media.media_url}`, '_blank')}
               />
             )}
             <button
