@@ -9,16 +9,21 @@ from .services.secure_credentials import (
 )
 from .services.instagram_client import login_instagram
 from pydantic import BaseModel
+from uuid import UUID
+from typing import List
+from typing import Optional
 
 router = APIRouter(prefix="/instagram-bot", tags=["Instagram Bot"])
 
-class InstagramCredential(BaseModel):
+class PlatformCredential(BaseModel):
     username: str
     password: str
+    platform:str
+    lang:str
 
 @router.post("/store-credentials")
 async def store_credentials(
-    credentials: InstagramCredential,
+    credentials: PlatformCredential,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -26,7 +31,8 @@ async def store_credentials(
         await store_social_credentials(
             db=db,
             user_id=current_user.id,
-            platform="instagram",
+            platform=credentials.platform,
+            lang=credentials.lang,
             identifier=credentials.username,
             credentials={"username": credentials.username, "password": credentials.password},
             is_oauth=False
@@ -36,16 +42,33 @@ async def store_credentials(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/get-credentials")
-async def retrieve_credentials(
-    current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    try:
-        creds = await get_social_credentials(db=db, user_id=current_user.id, platform="instagram")
-        return {"credentials": creds}
-    except Exception as e:
-        raise HTTPException(status_code=404, detail=str(e))
+@router.get("/get-credentials/", response_model=List[PlatformCredential])
+async def list_users(
+    user_id: Optional[str] = "",
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0, 
+    limit: int = 100,
+    ):
+    return await get_social_credentials(db=db, skip=skip, limit=limit, user_id=user_id)
+
+# @router.get("/get-credentials/{user_id}", response_model=List[PlatformCredential])
+# async def list_users(
+#     db: AsyncSession = Depends(get_db),
+#     skip: int = 0, limit: int = 100, 
+#     user_id=str
+#     ):
+#     return await get_social_credentials(db=db, skip=skip, limit=limit) 
+
+# @router.get("/get-credentials/{user_id}")
+# async def retrieve_credentials(
+#     user_id: UUID,
+#     db: AsyncSession = Depends(get_db),
+# ):
+#     try:
+#         creds = await get_social_credentials(db=db, user_id=user_id, platform="instagram")
+#         return {"credentials": creds}
+#     except Exception as e:
+#         raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.post("/test-login")

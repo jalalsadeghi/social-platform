@@ -1,7 +1,7 @@
 # backend/src/modules/user/crud.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from modules.user.models import User
+from modules.user.models import User, SocialAccount
 from modules.user.schemas import UserCreate, UserUpdate
 from passlib.context import CryptContext
 import uuid
@@ -56,3 +56,7 @@ async def delete_user(db: AsyncSession, user_id: uuid.UUID):
         await db.commit()
         return True
     return False
+
+async def get_user_social_accounts(db: AsyncSession, user_id: uuid.UUID):
+    result = await db.execute(select(SocialAccount).where(SocialAccount.user_id == user_id))
+    return result.scalars().all()

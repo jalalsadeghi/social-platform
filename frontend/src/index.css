@@ -113,6 +113,24 @@ button > span.switch {
     border: 1px solid #727272;
 }
 
+.data-\[state\=checked\]\:text-primary-foreground[data-state=unchecked] {
+    padding:0%;
+    border-radius:0%;
+}
+.data-\[state\=checked\]\:text-primary-foreground[data-state=checked] {
+    color: var(--primary-foreground);
+    padding:0%;
+    border-radius:0%;
+}
+.data-\[state\=checked\]\:bg-primary[data-state=checked] {
+    background-color: var(--primary);
+    padding:0%;
+}
+.data-\[state\=checked\]\:border-primary[data-state=checked] {
+    border-color: var(--primary);
+    padding:0%;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

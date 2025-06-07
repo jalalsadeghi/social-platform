@@ -4,6 +4,7 @@ from typing import List, Optional
 from datetime import datetime
 from enum import Enum
 from .models import QueueStatus
+from uuid import UUID
 
 class MediaType(str, Enum):
     image = "image"
@@ -41,9 +42,11 @@ class ProductBase(BaseModel):
 
 class ProductCreate(ProductBase):
     media: List[MediaCreate] = []
+    social_account_ids: List[UUID] = []
 
 class ProductUpdate(ProductBase):
     media: Optional[List[MediaCreate]] = []
+    social_account_ids: Optional[List[UUID]] = []
     status: Optional[QueueStatus] = None
     priority: Optional[int] = None
     scheduled_time: Optional[datetime] = None
@@ -57,6 +60,7 @@ class ProductOut(ProductBase):
     updated_at: datetime
     media: List[MediaOut]
     instagram_stats: Optional[InstagramStatsOut] = None
+    social_account_ids: List[UUID4] = []
 
 class Config:
     from_attributes = True

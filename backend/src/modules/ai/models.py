@@ -5,35 +5,30 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from core.database import Base
 from sqlalchemy.sql import func
+from .prompts import ai_prompt_english
 import enum
 
+class Language(enum.Enum):
+    English = "English"
+    German = "German"
+    Persian = "Persian"
+
 class PromptType(enum.Enum):
-    content_generation = "content_generation"
-    comment_response = "comment_response"
+    caption_prompt = "caption_prompt"
+    comment_prompt = "comment_prompt"
 
 class AIPrompt(Base):
     __tablename__ = 'ai_prompts'
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, index=True)
     prompt_name = Column(String, unique=True, nullable=False)
-    prompt_content = Column(Text, nullable=False)
-    prompt_type = Column(Enum(PromptType), nullable=False)
-    settings = Column(JSONB, default=dict)
+    prompt_content = Column(Text, default=ai_prompt_english ,nullable=False)
+    language = Column(Enum(Language), default=Language.English, index=True)
+    expertise = Column(String, unique=True, nullable=False)
+    promt_type = Column(Enum(PromptType), default=PromptType.caption_prompt, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    contents = relationship("AIContent", back_populates="prompt", lazy="selectin")
-
-class AIContent(Base):
-    __tablename__ = 'ai_contents'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_id = Column(UUID(as_uuid=True), ForeignKey('product.id', ondelete='CASCADE'), nullable=False)
-    prompt_id = Column(UUID(as_uuid=True), ForeignKey('ai_prompts.id', ondelete='SET NULL'), nullable=True)
-    content_text = Column(Text, nullable=False)
-    evaluation_score = Column(Float, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-    prompt = relationship("AIPrompt", back_populates="contents", lazy="joined")
-    product = relationship("Product", back_populates="ai_contents", lazy="selectin") 
+    users = relationship("User", back_populates="ai_prompts", lazy="joined")
+    social_accounts = relationship("SocialAccount", back_populates="ai_prompts", lazy="selectin")

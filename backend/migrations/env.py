@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 from dotenv import load_dotenv
 
-sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "src")))
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), "app/src/")))
 
 from core.database import Base
 

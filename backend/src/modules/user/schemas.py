@@ -2,6 +2,7 @@
 from pydantic import BaseModel, EmailStr, UUID4
 from datetime import datetime
 from typing import Optional
+from .models import SocialPlatform
 
 # Base User Schema
 class UserBase(BaseModel):
@@ -35,3 +36,11 @@ class UserResponse(UserBase):
 
     class Config:
         from_attributes = True
+
+class UserSocialAccounts(BaseModel):
+    id: UUID4
+    platform: SocialPlatform
+    account_identifier: str
+    created_at: datetime
+    updated_at: datetime
+

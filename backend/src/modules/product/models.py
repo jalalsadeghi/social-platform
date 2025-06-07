@@ -5,7 +5,7 @@ from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from core.database import Base
-from modules.ai.models import AIContent
+from sqlalchemy import Table
 import enum
 
 class QueueStatus(enum.Enum):
@@ -14,6 +14,13 @@ class QueueStatus(enum.Enum):
     ready = "ready"
     posted = "posted"
     failed = "failed"
+
+product_social_accounts = Table(
+    "product_social_accounts",
+    Base.metadata,
+    Column("product_id", UUID(as_uuid=True), ForeignKey("product.id", ondelete="CASCADE"), primary_key=True),
+    Column("social_account_id", UUID(as_uuid=True), ForeignKey("social_accounts.id", ondelete="CASCADE"), primary_key=True)
+)
 
 class Product(Base):
     __tablename__ = 'product'
@@ -30,10 +37,10 @@ class Product(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
+    social_accounts = relationship("SocialAccount", secondary=product_social_accounts, lazy="selectin")
     user = relationship("User", backref="products", lazy="selectin")
     media = relationship("Media", cascade="all, delete-orphan", back_populates="product", lazy="selectin")
     instagram_stats = relationship("InstagramStats", cascade="all, delete-orphan", back_populates="product", lazy="selectin", uselist=False) 
-    ai_contents = relationship("AIContent", back_populates="product", lazy="selectin", cascade="all, delete-orphan")
 
 class Media(Base):
     __tablename__ = 'media'
@@ -58,3 +65,5 @@ class InstagramStats(Base):
     last_checked_at = Column(DateTime(timezone=True), server_default=func.now())
 
     product = relationship("Product", back_populates="instagram_stats", lazy="selectin")
+
+

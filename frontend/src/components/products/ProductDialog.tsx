@@ -1,6 +1,7 @@
 // src/components/products/ProductDialog.tsx
 import React, { useState, useEffect } from "react";
 import { useProducts } from "@/hooks/useProducts";
+import { useUserSocialAccounts } from '@/hooks/useUserSocialAccounts';
 import { uploadFile } from "@/services/upload";
 import { ProductMediaUploader, generateVideoThumbnail,} from "./ProductMediaUploader";
 import {
@@ -16,6 +17,8 @@ import { scrapeProduct } from "@/services/scraping";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+// import { MultiSelector } from '@/components/ui/multi-select';
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Media {
   id?: string;
@@ -35,6 +38,7 @@ interface Props {
     status?: "pending" | "ready" | "processing" | "posted" | "failed";
     priority?: number;
     scheduled_time?: string;
+    social_account_ids?: string[];
   };
   open: boolean;
   onClose: () => void;
@@ -55,6 +59,11 @@ export const ProductDialog: React.FC<Props> = ({
   onClose,
 }) => {
   const { createMutation, updateMutation } = useProducts();
+  const { data: socialAccounts } = useUserSocialAccounts();
+  useEffect(() => {
+    console.log('socialAccounts:', socialAccounts);
+  }, [socialAccounts]);
+
 
   const [formData, setFormData] = useState({
     title: "",
@@ -70,6 +79,9 @@ export const ProductDialog: React.FC<Props> = ({
   const [isReady, setIsReady] = useState(false);
   const [priority, setPriority] = useState(0);
   const [scheduledTime, setScheduledTime] = useState<Date | null>(null);
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([]);
+
+
 
   useEffect(() => {
     if (initialData) {
@@ -84,6 +96,10 @@ export const ProductDialog: React.FC<Props> = ({
       setIsReady(initialData.status === "ready");
       setPriority(initialData.priority || 0);
       setScheduledTime(initialData.scheduled_time ? new Date(initialData.scheduled_time) : null);
+
+      if (initialData.social_account_ids) {
+      setSelectedAccounts(initialData.social_account_ids);
+      }
     }
   }, [initialData]);
 
@@ -147,6 +163,7 @@ export const ProductDialog: React.FC<Props> = ({
       status: isReady ? "ready" : "pending",
       priority: updatedPriority,
       scheduled_time: scheduledTime?.toISOString(),
+      social_account_ids: selectedAccounts,
     };
     
     console.log("productData:", productData);
@@ -213,39 +230,6 @@ export const ProductDialog: React.FC<Props> = ({
     }
   };
 
-
-  // const handleScrape = async () => {
-  //   if (!formData.product_url || !isValidUrl(formData.product_url)) {
-  //     setUrlError(true);
-  //     return;
-  //   }
-
-  //   setIsScraping(true);
-  //   try {
-  //     const scrapedData = await scrapeProduct(formData.product_url);
-  //     setFormData(prev => ({
-  //       ...prev,
-  //       title: scrapedData.title || prev.title,
-  //       description: scrapedData.description || prev.description,
-  //       ai_content: scrapedData.ai_content || prev.ai_content,
-  //     }));
-
-  //     const fetchedMedia = scrapedData.media_urls.map((url) => ({
-  //       media_url: url,
-  //       media_type: url.match(/\.(mp4|mov)$/i) ? "video" as const : "image" as const,
-  //       local_path: undefined,
-  //     }));
-
-  //     setExistingMedia(prev => [...prev, ...fetchedMedia]);
-
-  //     toast.success("Scraping completed successfully.");
-  //   } catch (error) {
-  //     toast.error(`Scraping failed: ${error}`);
-  //   } finally {
-  //     setIsScraping(false);
-  //   }
-  // };
-
   const handleRemoveExistingMedia = (media_url: string) => {
     setExistingMedia((prev) => prev.filter((media) => media.media_url !== media_url));
   };
@@ -254,7 +238,7 @@ export const ProductDialog: React.FC<Props> = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="space-y-4">
+      <DialogContent className="space-y-4 max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>
             {productId ? "Edit Product" : "Add New Product"}
@@ -303,6 +287,47 @@ export const ProductDialog: React.FC<Props> = ({
             className="data-[state=checked]:!bg-gray-900 data-[state=unchecked]:!bg-gray-200 w-9 h-6 rounded-full"
           />
           <Label htmlFor="status-ready">Set Status to {isReady ? "Ready" : "Pending"}</Label>
+        </div>
+        
+        {/* {socialAccounts && (
+          <MultiSelector
+            options={socialAccounts.map(acc => ({
+              label: acc.account_identifier,
+              value: acc.id,
+            }))}
+            value={selectedAccounts
+              .map(id => socialAccounts.find(acc => acc.id === id))
+              .filter(Boolean)
+              .map(acc => ({
+                label: acc!.account_identifier,
+                value: acc!.id,
+              }))}
+            onChange={(selected) => setSelectedAccounts(selected.map(item => item.value))}
+            placeholder="Select Social Accounts"
+          />
+        )} */}
+        <div className="space-y-2">
+          <Label className="font-semibold">Select Social Accounts:</Label>
+          {socialAccounts?.map((account) => (
+            <div key={account.id} className="flex items-center space-x-2">
+              <Checkbox
+                id={account.id}
+                checked={selectedAccounts.includes(account.id)}
+                onCheckedChange={(checked) => {
+                  setSelectedAccounts((prev) => {
+                    if (checked) {
+                      return [...prev, account.id];
+                    } else {
+                      return prev.filter((id) => id !== account.id);
+                    }
+                  });
+                }}
+              />
+              <Label htmlFor={account.id}>
+                {account.account_identifier} ({account.platform})
+              </Label>
+            </div>
+          ))}
         </div>
 
         <ProductMediaUploader

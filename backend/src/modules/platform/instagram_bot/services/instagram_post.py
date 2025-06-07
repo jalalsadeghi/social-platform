@@ -102,7 +102,7 @@ async def post_to_instagram(db, user_id, page):
         print(f"⚠️ Spinner did not appear promptly: {e}")
         await screenshot(page, "219_Spinner", "error")
 
-    error_popup_selector = 'div[role="dialog"]:has-text("Something went wrong.") button[aria-label="Close"]'
+    error_popup_selector = 'div[role="heading"]:has-text("Something went wrong")'
     close_button_selector = "div[role='button'][tabindex='0']:has(svg[aria-label='Close'])"
     try:
         # بررسی پیام خطا

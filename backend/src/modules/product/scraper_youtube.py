@@ -17,13 +17,14 @@ from moviepy.audio.io.AudioFileClip import AudioFileClip
 from moviepy.audio.AudioClip import CompositeAudioClip
 from moviepy.video.VideoClip import TextClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
-from .prompts import (ai_caption_prompt, 
-                      expertise_prompt, 
-                      search_ai_caption_prompt, 
-                      hashtag_prompt,
-                      chanel_name)
 import logging
 logging.basicConfig(level=logging.INFO)
+
+ai_caption_prompt = ""
+expertise_prompt = ""
+search_ai_caption_prompt = ""
+hashtag_prompt = ""
+chanel_name = ""
 
 UPLOAD_DIRECTORY = settings.UPLOAD_DIRECTORY
 
