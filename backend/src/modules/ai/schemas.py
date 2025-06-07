@@ -2,14 +2,13 @@
 from pydantic import BaseModel, UUID4
 from typing import Optional
 from datetime import datetime
-from .models import Language, PromptType
-from .prompts import ai_prompt_english
+from .models import Language, PromptType, PromptSample
 from uuid import UUID
 
 class PromptBase(BaseModel):
     prompt_name: str
     language: Language 
-    prompt_content: str = ai_prompt_english
+    prompt_content: str = PromptSample
     expertise: str
     promt_type: PromptType 
     
@@ -31,3 +30,11 @@ class PromptOut(PromptBase):
 
     class Config:
         from_attributes = True
+
+class LanguageBase(BaseModel):
+    name: str
+    value: str
+
+class PromptSampleBase(BaseModel):
+    name: str
+    value: str

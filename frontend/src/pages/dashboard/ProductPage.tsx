@@ -1,3 +1,4 @@
+// frontend/src/pages/ProductPage.tsx
 import { ProductTable } from "@/components/products/ProductTable";
 import { ProductDialog } from "@/components/products/ProductDialog";
 

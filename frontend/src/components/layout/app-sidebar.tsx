@@ -3,6 +3,8 @@
 import * as React from "react"
 import { useAuth } from "@/hooks/useAuth";
 import {
+  AirVentIcon,
+  BookAIcon,
   Command,
   LifeBuoy,
   Send,
@@ -50,6 +52,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navMain = [
     { title: "Products", url: "/products", icon: TableOfContentsIcon },
+    { title: "Prompts", url: "/prompts", icon: BookAIcon },
     { title: "Ask AI", url: "#", icon: Sparkles },
   ];
 

@@ -10,11 +10,13 @@ ADMIN_PERMISSIONS = {
     "plan": {"read": True, "create": True, "delete": True, "update": True},
     "user": {"read": True, "create": True, "delete": True, "update": True},
     "product": {"read": True, "create": True, "delete": True, "update": True},
-    "role": {"read": True, "create": True, "delete": True, "update": True}
+    "role": {"read": True, "create": True, "delete": True, "update": True},
+    "prompt": {"read": True, "create": True, "delete": True, "update": True},
 }
 
 USER_PERMISSIONS = {
-    "product": {"read": True, "create": True, "delete": True, "update": True}
+    "product": {"read": True, "create": True, "delete": True, "update": True},
+    "prompt": {"read": True, "create": True, "delete": True, "update": True},
 }
 
 

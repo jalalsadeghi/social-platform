@@ -8,6 +8,7 @@ import DashboardPage from '@/pages/dashboard/DashboardPage';
 import ProductPage from '@/pages/dashboard/ProductPage';
 import RolesPage from '@/pages/dashboard/RolesPage';
 import PlanPage from '@/pages/dashboard/PlanPage';
+import PromptPage from '@/pages/dashboard/PromptPage';
 
 function App() {
   return (
@@ -18,11 +19,12 @@ function App() {
 
         <Route element={<DashboardLayout />}>
           <Route path="/" element={<DashboardPage />} />
-
           <Route element={<ProtectedRoute module="product" action="read" />}>
             <Route path="/products" element={<ProductPage />} />
           </Route>
-
+          <Route element={<ProtectedRoute module="prompt" action="read" />}>
+            <Route path="/prompts" element={<PromptPage />} />
+          </Route>
           <Route element={<ProtectedRoute module="role" action="read" />}>
             <Route path="/roles" element={<RolesPage />} />
           </Route>
