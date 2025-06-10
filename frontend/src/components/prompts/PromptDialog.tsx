@@ -109,19 +109,6 @@ export const PromptDialog: React.FC<Props> = ({
           placeholder="Prompt Name"
         />
 
-        {/* <Select
-          value={formData.promt_type}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Prompt Type" />
-          </SelectTrigger>
-          <SelectContent>
-            {prompt_type?.map((type) => (
-              <SelectItem value={type.value}>{type.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select> */}
-
         <Select
           value={formData.promt_type}
           onValueChange={(value) => setFormData({ ...formData, promt_type: value })}

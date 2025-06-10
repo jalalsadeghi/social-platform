@@ -10,6 +10,7 @@ import {
   Send,
   Sparkles,
   TableOfContentsIcon,
+  UnplugIcon,
   UserCog,
 } from "lucide-react"
 
@@ -53,6 +54,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const navMain = [
     { title: "Products", url: "/products", icon: TableOfContentsIcon },
     { title: "Prompts", url: "/prompts", icon: BookAIcon },
+    { title: "Platform", url: "/platforms", icon: UnplugIcon },
     { title: "Ask AI", url: "#", icon: Sparkles },
   ];
 

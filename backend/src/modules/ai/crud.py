@@ -1,7 +1,7 @@
 # backend/src/modules/ai/crud.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from modules.ai.models import AIPrompt, Language
+from modules.ai.models import AIPrompt
 from modules.ai.schemas import PromptCreate, PromptUpdate
 from uuid import UUID
 from typing import List
@@ -37,9 +37,9 @@ async def update_prompt(db: AsyncSession, prompt_id: UUID, user_id: UUID, data: 
     return db_prompt
 
 async def delete_prompt(db: AsyncSession, prompt_id: UUID, user_id: UUID):
-    db_product = await get_prompt(db, prompt_id, user_id)
-    if db_product:
-        await db.delete(db_product)
+    db_platform = await get_prompt(db, prompt_id, user_id)
+    if db_platform:
+        await db.delete(db_platform)
         await db.commit()
         return True
     return False

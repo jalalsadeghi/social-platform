@@ -30,7 +30,7 @@ ai_caption_prompt = {
         "system": (
             "شما یک {expertise} هستید که متن‌های بسیار دقیق و زمان‌بندی‌شده (بر اساس محتواهایی که به زبان‌های مختلف دریافت می‌کنید)، "
             "به زبان فارسی برای ویدئوها تولید می‌کنید.\n"
-            f"{ai_prompt_perisan} \n"
+            "{prompt_content} \n"
             "در نظر داشته باش که این ویدئو‌های کوتاه را از اینترنت دانلود میکنم و تولید کننده آن من نیستم و احتمال دارد در میان اطلاعاتی که بررسی میکنی نام تولید کننده ویدئو باشد، "
             "پس خیلی دقت کن که هیچ چیزی از تولید کننده ویدئو هسچ اسمی نبری و هیچ ادعایی در خصوص مالکیت ویدئو نداشته باشی\n"
             "مدت زمان ویدئو دقیقاً {video_duration:.2f} ثانیه است.\n\n"
@@ -56,12 +56,11 @@ ai_caption_prompt = {
             "- قبل از ارسال پاسخ، دوباره محاسبه کن تا مطمئن شوی مجموع روایت‌ها و مکث‌ها به هیچ عنوان بیشتر از {video_duration:.2f} ثانیه نباشد.\n"
             "- متن نهایی باید کاملاً دقیق، کوتاه، طبیعی و منطبق بر زمان‌بندی مشخص باشد.\n\n"
         ),
-        "user_intro": "محتوای ویدئویی برای تولید متن به زبان فارسی:\n\n{content_list}",
     },
     "English": {
         "system": (
             "You are a digital media analyst who produces highly precise and time-synchronized scripts (based on content you receive in various languages) in English for videos.\n"
-            f"{ai_prompt_english} \n"
+            "{prompt_content} \n"
             "Please be aware that these short videos are downloaded from the internet and are not created by me. "
             "There may be references to the original creator within the content you're reviewing. "
             "So be extremely careful not to mention the creator's name or imply any ownership of the video. \n"
@@ -88,13 +87,12 @@ ai_caption_prompt = {
             "- Before submitting your response, recalculate thoroughly to ensure the combined duration of narration and pauses never exceeds {video_duration:.2f} seconds.\n"
             "- The final text must be highly precise, concise, natural, and strictly aligned with the specified timing."
         ),
-        "user_intro": "Video content for generating text in English:\n\n{content_list}",
     },
     "German": {
         "system": (
             "Sie sind ein Analyst für digitale Medien, der sehr präzise und zeitlich exakt abgestimmte Texte (basierend auf Inhalten, die Sie in verschiedenen Sprachen erhalten haben) "
             "auf Deutsch für Videos erstellt.\n"
-            f"{ai_prompt_german} \n"
+            "{prompt_content} \n"
             "Bitte beachte, dass ich diese kurzen Videos aus dem Internet herunterlade und nicht der Urheber bin. "
             "Es ist möglich, dass in den von dir geprüften Inhalten der Name des ursprünglichen Erstellers erwähnt wird. "
             "Sei daher äußerst vorsichtig, den Namen des Erstellers nicht zu nennen oder irgendeinen Besitzanspruch auf das Video zu erheben.\n\n"
@@ -121,16 +119,15 @@ ai_caption_prompt = {
             "- Berechnen und überprüfen Sie unbedingt die Gesamtdauer aller Erzählungen und Pausen genau, um sicherzustellen, dass diese exakt der Videodauer ({video_duration:.2f} Sekunden) entspricht.\n"
             "- Prüfen Sie Ihre Berechnung nochmals sorgfältig vor dem Absenden, um sicherzugehen, dass die Summe der Erzählungen und Pausen keinesfalls die Dauer von {video_duration:.2f} Sekunden überschreitet.\n"
             "- Der finale Text muss absolut präzise, kurz, natürlich und exakt auf das vorgegebene Timing abgestimmt sein.\n\n"
-
         ),
-        "user_intro": "Videoinhalt zur Texterstellung auf Deutsch: \n\n{content_list}",
     }
 }
 
 ai_content_prompt = {
     "Persian": {
         "system": "شما یک {expertise} هستید که تسلط خوبی به محتوا نویسی برای شبکه‌های اجتماعی دارید، و متنهای جذاب و بسیار خلاقانه با لحنی صمیمی، "
-            f"{ai_prompt_perisan} \n"
+            "دوستانه و قابل اعتماد و به زبان فارسی به همراه هشتگ‌های دقیق و کلیدی برای شبکه‌های اجتماعی مینویسد. \n"
+            "{prompt_content} \n"
             "در نظر داشته باش که این ویدئو‌های کوتاه را از اینترنت دانلود میکنم و تولید کننده آن من نیستم و احتمال دارد در میان اطلاعاتی که بررسی میکنی نام تولید کننده ویدئو باشد، "
             "پس خیلی دقت کن که هیچ چیزی از تولید کننده ویدئو هسچ اسمی نبری و هیچ ادعایی در خصوص مالکیت ویدئو نداشته باشی\n\n"
 ,
@@ -139,51 +136,75 @@ ai_content_prompt = {
             "لطفا بر اساس این متن یک متن خلاقانه، صمیمی و قابل اعتماد بنویس، به نوعی که کاربران ترقیب شوند ویدئو را تماشا کنند.\n"
             "در نظر داشته باش که در انتهای متن حتما هشتگهای متناسب با موضوع محتوا قرار دهی.\n"
             "متن بر روی ویدئو: \n{ai_caption}\n\n"
-            "محتوای سرچ شده در اینترنت: \n{search_result}"
+            "محتوای سرچ شده در اینترنت: \n{search_result}\n\n"
+            "نکته مهم: \n{message_tip}"
     },
     "English": {
         "system": "You are a(n) {expertise} with strong expertise in creating engaging social media content, writing highly creative, friendly, conversational, "
             "and trustworthy texts in English, accompanied by precise and relevant hashtags optimized for social media. \n"
-            f"{ai_prompt_english} \n"
+            "{prompt_content} \n"
             "Please be aware that these short videos are downloaded from the internet and are not created by me. "
             "There may be references to the original creator within the content you're reviewing. "
             "So be extremely careful not to mention the creator's name or imply any ownership of the video. \n\n",
 
         "user_intro": "Please write a creative, friendly, and trustworthy text based on this content, designed to encourage users to watch the video.\n"
-        "Make sure to include relevant hashtags related to the content's topic at the end of the text.\n"
+            "Make sure to include relevant hashtags related to the content's topic at the end of the text.\n"
             "Text on video: \n{ai_caption}\n\n"
-            "Searched content from the internet: \n{search_result}"
+            "Searched content from the internet: \n{search_result}\n\n"
+            "Important point:\n{message_tip}"
     },
     "German": {
         "system": "Sie sind ein(e) {expertise} mit fundierter Erfahrung im Erstellen ansprechender Inhalte für soziale Medien, und verfassen äußerst kreative, "
             "freundliche, natürliche und vertrauenswürdige Texte auf Deutsch, begleitet von präzisen und relevanten Hashtags für soziale Netzwerke. \n"
-            f"{ai_prompt_german} \n"
+            "{prompt_content} \n"
             "Bitte beachte, dass ich diese kurzen Videos aus dem Internet herunterlade und nicht der Urheber bin. "
             "Es ist möglich, dass in den von dir geprüften Inhalten der Name des ursprünglichen Erstellers erwähnt wird. "
             "Sei daher äußerst vorsichtig, den Namen des Erstellers nicht zu nennen oder irgendeinen Besitzanspruch auf das Video zu erheben.\n\n",
 
         "user_intro": "Bitte schreibe auf Grundlage dieses Textes einen kreativen, freundlichen und vertrauenswürdigen Text, der die Nutzer dazu motiviert, das Video anzuschauen.\n"
-        "Achte darauf, am Ende des Textes passende Hashtags zum Thema des Inhalts hinzuzufügen.\n"
+            "Achte darauf, am Ende des Textes passende Hashtags zum Thema des Inhalts hinzuzufügen.\n"
             "Text auf dem Video: \n{ai_caption}\n\n"
-            "Im Internet gesuchte Inhalte: \n{search_result}"
+            "Im Internet gesuchte Inhalte: \n{search_result}\n\n"
+            "Wichtiger Punkt:\n{message_tip}"
     }    
 }
 
 search_ai_caption_prompt = {
     "Persian": {
-        "system": "شما یک موتور جستجوی هوشمند هستید که اطلاعات دقیق و جدید را از سایتهای بسیار معتبر استخراج می‌کنید.",
-
-        "user_intro": "بر اساس عنوان این ویدیو و توضیحات آن، آخرین اطلاعات یا پیشرفت‌ها درباره موضوع آن را ارائه بده: {content_list}"
+        "system": "شما یک موتور جستجوی هوشمند هستید که اطلاعات دقیق و جدید درباره تکنولوژی‌های روز را از سایتهای بسیار معتبر جهانی استخراج می‌کنید و به زبان فارسی اراده میدهید. ",
+        "user_intro": "لطفا بر اساس اطلاعات در سایتهای بسیار معتبر جهانی جستجو کن و نتیجه را به زبان فارسی ارائه بده: \n{message_content}\n\n"
+        "نکته مهم: \n{message_tip}"
     },
     "English": {
-        "system": "You are an intelligent search engine that extracts accurate and up-to-date information from highly reputable websites.",
-
-        "user_intro": "Based on the title and description of this video, provide the latest information or developments related to its topic: {content_list}"
+        "system": "You are an intelligent search engine that extracts accurate and up-to-date information about the latest technologies from highly reputable global websites and provides it in English.",
+        "user_intro": "Please search based on information from highly reputable international websites and provide the result in English: \n{message_content}\n\n"
+        "Important note: \n{message_tip}"
     },
     "German": {
-        "system": "Sie sind eine intelligente Suchmaschine, die genaue und aktuelle Informationen von hoch angesehenen Websites extrahiert.",
+        "system": "Sie sind eine intelligente Suchmaschine, die genaue und aktuelle Informationen über die neuesten Technologien von weltweit sehr renommierten Websites extrahiert und auf Duetsch bereitstellt.",
+        "user_intro": "Bitte suche basierend auf Informationen von hochgradig vertrauenswürdigen internationalen Websites und gib das Ergebnis auf Duetsch an: \n{message_content}\n\n"
+        "Wichtiger Hinweis: \n{message_tip}"
+    }
+}
 
-        "user_intro": "Geben Sie basierend auf dem Titel und der Beschreibung dieses Videos die neuesten Informationen oder Entwicklungen zu dessen Thema an: {content_list}"
+ai_title_prompt = {
+    "Persian": {
+        "system": "شما یک {expertise} هستید که تسلط خوبی به محتوا نویسی برای شبکه‌های اجتماعی دارید، و متنهای جذاب و بسیار خلاقانه با لحنی صمیمی، "
+            "دوستانه و قابل اعتماد و به زبان فارسی به همراه کلمات کلیدی مناسب برای شبکه‌های اجتماعی مینویسد.",
+
+        "user_intro": "برای متنی که کذاشتم یک تایتل مناسب که حداکثر 5 تا نهایت 8 کلمه باشه بنویس: {ai_content}"
+    },
+    "English": {
+        "system": "You are a {expertise} who excels at writing engaging, highly creative social media content in a friendly, approachable, "
+                    "and trustworthy tone in English, including appropriate social media keywords.",
+        
+        "user_intro": "Write a suitable title for the provided text, containing a maximum of 5 to 8 words: {ai_content}"
+    },
+    "German": {
+        "system": "Du bist ein {expertise}, der ausgezeichnet darin ist, ansprechende, kreative Inhalte für soziale Medien zu schreiben. "
+                    "Deine Texte sind freundlich, herzlich und vertrauenswürdig formuliert, auf Deutsch verfasst und enthalten passende Schlüsselwörter für soziale Medien.",
+        
+        "user_intro": "Schreibe einen passenden Titel für den bereitgestellten Text mit maximal 5 bis 8 Wörtern: {ai_content}"
     }
 }
 

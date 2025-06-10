@@ -37,7 +37,7 @@ class Product(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    social_accounts = relationship("SocialAccount", secondary=product_social_accounts, lazy="selectin")
+    platform = relationship("Platform", secondary=product_social_accounts, lazy="selectin")
     user = relationship("User", backref="products", lazy="selectin")
     media = relationship("Media", cascade="all, delete-orphan", back_populates="product", lazy="selectin")
     instagram_stats = relationship("InstagramStats", cascade="all, delete-orphan", back_populates="product", lazy="selectin", uselist=False) 

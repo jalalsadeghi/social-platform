@@ -5,7 +5,7 @@ from sqlalchemy import delete
 from datetime import datetime, timezone
 from .models import Product, Media, QueueStatus
 from .schemas import ProductCreate, ProductUpdate
-from modules.user.models import SocialAccount
+from modules.platform.models import Platform
 import uuid
 from uuid import UUID
 from typing import Optional
@@ -30,7 +30,7 @@ async def create_product(db: AsyncSession, product: ProductCreate, user_id: uuid
     # Fetch social accounts
     if product.social_account_ids:
         social_accounts = (await db.execute(
-            select(SocialAccount).where(SocialAccount.id.in_(product.social_account_ids), SocialAccount.user_id == user_id)
+            select(Platform).where(Platform.id.in_(product.social_account_ids), Platform.user_id == user_id)
         )).scalars().all()
         db_product.social_accounts = social_accounts
 
@@ -59,7 +59,7 @@ async def update_product(db: AsyncSession, product_id: UUID, product_update: Pro
 
     if product_update.social_account_ids is not None:
         social_accounts = (await db.execute(
-            select(SocialAccount).where(SocialAccount.id.in_(product_update.social_account_ids), SocialAccount.user_id == user_id)
+            select(Platform).where(Platform.id.in_(product_update.social_account_ids), Platform.user_id == user_id)
         )).scalars().all()
         db_product.social_accounts = social_accounts
 

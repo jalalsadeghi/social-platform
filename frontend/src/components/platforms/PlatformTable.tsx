@@ -1,7 +1,7 @@
-// src/components/prompts/PromptTable.tsx
+// src/components/platforms/PlatformTable.tsx
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { usePrompts } from "@/hooks/usePrompts";
+import { usePlatform } from "@/hooks/usePlatform";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -12,24 +12,25 @@ import {
   TableRow,
   TableCaption,
 } from "@/components/ui/table";
-import { PromptDialog } from "./PromptDialog";
+import { PlatformDialog } from "./PlatformDialog";
 import { Button } from "@/components/ui/button";
 
-export const PromptTable = () => {
-  const { promptsQuery, deleteMutation } = usePrompts();
-  const { data, fetchNextPage, hasNextPage, isLoading } = promptsQuery;
-
-  const [selectedPrompt, setSelectedPrompt] = useState<any>(null);
+export const PlatformTable = () => {
+  const { platformsQuery, deleteMutation } = usePlatform();
+  const { data, fetchNextPage, hasNextPage, isLoading } = platformsQuery;
+  
+  const [selectedPlatform, setSelectedPlatform] = useState<any>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  
 
-  const handleEditClick = (prompt: any) => {
-    setSelectedPrompt(prompt);
+  const handleEditClick = (platform: any) => {
+    setSelectedPlatform(platform);
     setDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
-    setSelectedPrompt(null);
+    setSelectedPlatform(null);
     setDialogOpen(false);
   };
 
@@ -43,45 +44,47 @@ export const PromptTable = () => {
     );
   }
 
-  const sortedPrompts = data?.pages.flat();
-
+  const sortedPlatforms = data?.pages.flat();
+  
   return (
     <>
       <div className="flex justify-end items-center mb-4">
-        <Button onClick={() => setAddDialogOpen(true)}>Add New Prompt</Button>
+        <Button onClick={() => setAddDialogOpen(true)}>Add New Platform</Button>
       </div>
 
       <InfiniteScroll
-        dataLength={sortedPrompts?.length || 0}
+        dataLength={sortedPlatforms?.length || 0}
         next={fetchNextPage}
         hasMore={!!hasNextPage}
         loader={<Skeleton className="w-full h-12" />}
       >
         <Table>
-          <TableCaption>A list of your prompts.</TableCaption>
+          <TableCaption>A list of your platforms.</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead>#</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Language</TableHead>
+              <TableHead>Platform</TableHead>
+              <TableHead>Account Identifier</TableHead>
+              <TableHead>OAuth</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sortedPrompts?.map((prompt, index) => (
-              <TableRow key={prompt.id}>
+            {sortedPlatforms?.map((platform, index) => (
+              <TableRow key={platform.id}>
                 <TableCell>{index + 1}</TableCell>
-                <TableCell>{prompt.prompt_name}</TableCell>
-                <TableCell>{prompt.language}</TableCell>
+                <TableCell>{platform.platform}</TableCell>
+                <TableCell>{platform.username}</TableCell>
+                <TableCell>{platform.is_oauth ? "Yes" : "No"}</TableCell>
                 <TableCell className="text-right space-x-2">
                   <button
-                    onClick={() => handleEditClick(prompt)}
+                    onClick={() => handleEditClick(platform)}
                     className="text-blue-500 hover:underline"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={() => deleteMutation.mutate(prompt.id)}
+                    onClick={() => deleteMutation.mutate(platform.id)}
                     className="text-red-500 hover:underline"
                   >
                     Delete
@@ -92,23 +95,25 @@ export const PromptTable = () => {
           </TableBody>
         </Table>
       </InfiniteScroll>
-
-      {dialogOpen && selectedPrompt && (
-        <PromptDialog
-          promptId={selectedPrompt.id}
+            
+      {dialogOpen && selectedPlatform && (
+        <PlatformDialog
+          platformId={selectedPlatform.id}
           initialData={{
-            prompt_name: selectedPrompt.prompt_name,
-            prompt_content: selectedPrompt.prompt_content,
-            language: selectedPrompt.language,
-            expertise: selectedPrompt.expertise,
-            promt_type: selectedPrompt.promt_type,
+            platform: selectedPlatform.platform,
+            // account_identifier: selectedPlatform.username,
+            username: selectedPlatform.username,
+            password: selectedPlatform.password,
+            credentials: selectedPlatform.credentials,
+            cookies: selectedPlatform.cookies,
+            is_oauth: selectedPlatform.is_oauth,
           }}
           open={dialogOpen}
           onClose={handleCloseDialog}
         />
       )}
 
-      <PromptDialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} />
+      <PlatformDialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)} />
     </>
   );
 };

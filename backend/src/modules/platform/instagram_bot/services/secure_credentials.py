@@ -2,7 +2,7 @@
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from modules.user.models import SocialAccount
+from modules.platform.models import Platform
 from ..utils.security import encrypt, decrypt
 
 async def store_social_credentials(
@@ -15,7 +15,7 @@ async def store_social_credentials(
         is_oauth: bool,
         ):
     encrypted_creds = {key: encrypt(value) for key, value in credentials.items()}
-    account = SocialAccount(
+    account = Platform(
         user_id=user_id,
         platform=platform,
         lang=lang,
@@ -29,10 +29,10 @@ async def store_social_credentials(
 
 async def get_social_credentials(user_id: str, db: AsyncSession, skip: int = 0, limit: int = 100):
 
-    query = select(SocialAccount)
+    query = select(Platform)
 
     if user_id:
-        query = query.where(SocialAccount.user_id == user_id) 
+        query = query.where(Platform.user_id == user_id) 
     else:
         query = query.offset(skip).limit(limit)
 
@@ -58,7 +58,7 @@ async def get_social_credentials(user_id: str, db: AsyncSession, skip: int = 0, 
 
 async def store_cookies(db: AsyncSession, user_id: UUID, platform: str, cookies: list):
     account = (await db.execute(
-        select(SocialAccount).filter_by(user_id=user_id, platform=platform)
+        select(Platform).filter_by(user_id=user_id, platform=platform)
     )).scalars().first()
     if account:
         account.cookies = cookies
@@ -66,6 +66,6 @@ async def store_cookies(db: AsyncSession, user_id: UUID, platform: str, cookies:
 
 async def get_cookies(db: AsyncSession, user_id: UUID, platform: str):
     account = (await db.execute(
-        select(SocialAccount).filter_by(user_id=user_id, platform=platform)
+        select(Platform).filter_by(user_id=user_id, platform=platform)
     )).scalars().first()
     return account.cookies if account and account.cookies else None

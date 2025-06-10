@@ -1,14 +1,14 @@
 # backend/src/modules/user/crud.py
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from modules.user.models import User, SocialAccount
+from modules.user.models import User
 from modules.user.schemas import UserCreate, UserUpdate
 from passlib.context import CryptContext
-import uuid
+from uuid import UUID
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-async def get_user(db: AsyncSession, user_id: uuid.UUID):
+async def get_user(db: AsyncSession, user_id: UUID):
     result = await db.execute(select(User).where(User.id == user_id))
     return result.scalars().first()
 
@@ -23,7 +23,7 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100):
 async def create_user(db: AsyncSession, user: UserCreate):
     hashed_password = pwd_context.hash(user.password)
     db_user = User(
-        id=uuid.uuid4(),
+        id=UUID,
         username=user.username,
         email=user.email,
         hashed_password=hashed_password,
@@ -36,7 +36,7 @@ async def create_user(db: AsyncSession, user: UserCreate):
     await db.refresh(db_user)
     return db_user
 
-async def update_user(db: AsyncSession, user_id: uuid.UUID, user_update: UserUpdate):
+async def update_user(db: AsyncSession, user_id: UUID, user_update: UserUpdate):
     db_user = await get_user(db, user_id)
     if not db_user:
         return None
@@ -49,7 +49,7 @@ async def update_user(db: AsyncSession, user_id: uuid.UUID, user_update: UserUpd
     await db.refresh(db_user)
     return db_user
 
-async def delete_user(db: AsyncSession, user_id: uuid.UUID):
+async def delete_user(db: AsyncSession, user_id: UUID):
     db_user = await get_user(db, user_id)
     if db_user:
         await db.delete(db_user)
@@ -57,6 +57,3 @@ async def delete_user(db: AsyncSession, user_id: uuid.UUID):
         return True
     return False
 
-async def get_user_social_accounts(db: AsyncSession, user_id: uuid.UUID):
-    result = await db.execute(select(SocialAccount).where(SocialAccount.user_id == user_id))
-    return result.scalars().all()

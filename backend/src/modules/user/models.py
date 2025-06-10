@@ -4,8 +4,6 @@ from sqlalchemy import Column, String, ForeignKey, DateTime, func, Boolean, Enum
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from core.database import Base
-from modules.plan.models import Plan
-import enum
 
 
 class Role(Base):
@@ -38,27 +36,5 @@ class User(Base):
     role = relationship("Role", back_populates="users", lazy="joined")
     plan = relationship("Plan", back_populates="users", lazy="joined")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")
-    social_accounts = relationship("SocialAccount", back_populates="user", lazy="selectin")
+    platform = relationship("Platform", back_populates="users", lazy="selectin")
     ai_prompts = relationship("AIPrompt", back_populates="users", lazy="selectin")
-
-class SocialPlatform(enum.Enum):
-    instagram = "instagram"
-    youtube = "youtube"
-    tiktok = "tiktok"
-
-class SocialAccount(Base):
-    __tablename__ = 'social_accounts'
-
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id'), nullable=False, index=True)
-    platform = Column(Enum(SocialPlatform), default=SocialPlatform.instagram, index=True)
-    prompt_id = Column(UUID(as_uuid=True), ForeignKey('ai_prompts.id'), nullable=False, index=True)
-    account_identifier = Column(String, nullable=False)  # Chanel ID
-    credentials = Column(JSONB, nullable=True)
-    cookies = Column(JSONB, nullable=True)
-    is_oauth = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
-
-    user = relationship("User", back_populates="social_accounts", lazy="joined")
-    ai_prompts = relationship("AIPrompt", back_populates="social_accounts", lazy="joined")

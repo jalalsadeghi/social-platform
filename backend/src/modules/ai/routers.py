@@ -30,10 +30,8 @@ async def read_prompts(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    prompts = await crud.get_prompts(db,  user_id=current_user.id, skip=skip, limit=limit)
-    if not prompts:
-        raise HTTPException(status_code=404, detail="Prompts not found")
-    return prompts
+    prompts = await crud.get_prompts(db, user_id=current_user.id, skip=skip, limit=limit)
+    return prompts if prompts else []
     
 
 @router.get("/{prompt_id}", response_model=schemas.PromptOut)

@@ -5,7 +5,6 @@ from core.database import get_db
 from modules.user import schemas, crud
 from typing import List
 from uuid import UUID
-from core.dependencies import get_current_user
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -40,10 +39,3 @@ async def delete_user(user_id: UUID, db: AsyncSession = Depends(get_db)):
 @router.get("/", response_model=List[schemas.UserResponse])
 async def list_users(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     return await crud.get_users(db=db, skip=skip, limit=limit)
-
-@router.get("/user/social-accounts", response_model=List[schemas.UserSocialAccounts])
-async def user_social_accounts(
-    current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    return await crud.get_user_social_accounts(db=db, user_id=current_user.id)

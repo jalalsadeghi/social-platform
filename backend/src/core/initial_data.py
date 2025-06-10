@@ -9,14 +9,16 @@ from modules.auth.utils import get_password_hash
 ADMIN_PERMISSIONS = {
     "plan": {"read": True, "create": True, "delete": True, "update": True},
     "user": {"read": True, "create": True, "delete": True, "update": True},
-    "product": {"read": True, "create": True, "delete": True, "update": True},
+    "content": {"read": True, "create": True, "delete": True, "update": True},
     "role": {"read": True, "create": True, "delete": True, "update": True},
     "prompt": {"read": True, "create": True, "delete": True, "update": True},
+    "platform": {"read": True, "create": True, "delete": True, "update": True},
 }
 
 USER_PERMISSIONS = {
-    "product": {"read": True, "create": True, "delete": True, "update": True},
+    "content": {"read": True, "create": True, "delete": True, "update": True},
     "prompt": {"read": True, "create": True, "delete": True, "update": True},
+    "platform": {"read": True, "create": True, "delete": True, "update": True},
 }
 
 
