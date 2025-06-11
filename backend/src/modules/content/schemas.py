@@ -25,6 +25,8 @@ class ContentBase(BaseModel):
     content_url: str
     video_filename: str
     thumb_filename: str
+    remove_audio: Optional[bool] = False
+    music_id: Optional[UUID] = None
 
 class ContentCreate(ContentBase):
     pass
@@ -43,6 +45,15 @@ class ContentOut(ContentBase):
     scheduled_time: Optional[datetime]
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class MusicFileOut(BaseModel):
+    id: UUID
+    filename: str
+    original_name: Optional[str]
+    created_at: datetime
 
     class Config:
         from_attributes = True

@@ -1,6 +1,6 @@
 # src/modules/conent/models.py
 import uuid
-from sqlalchemy import Column, String, ForeignKey, DateTime, Enum, Integer, Text
+from sqlalchemy import Column, String, ForeignKey, DateTime, Enum, Integer, Text, Boolean
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -34,6 +34,8 @@ class Content(Base):
     ai_content = Column(Text, nullable=True)
     video_filename = Column(String, nullable=False)
     thumb_filename = Column(String, nullable=True)
+    remove_audio = Column(Boolean, default=False)
+    music_id = Column(UUID(as_uuid=True), ForeignKey('music_files.id'), nullable=True)
     status = Column(Enum(QueueStatus), default=QueueStatus.pending, index=True)
     priority = Column(Integer, default=0)
     scheduled_time = Column(DateTime(timezone=True), nullable=True)
@@ -42,16 +44,15 @@ class Content(Base):
 
     platform = relationship("Platform", secondary=content_platforms, lazy="selectin")
     user = relationship("User", backref="contents", lazy="selectin")
-    # media = relationship("Media", cascade="all, delete-orphan", back_populates="contents", lazy="selectin")
+    music = relationship("MusicFile", backref="contents", lazy="selectin")
 
-# class Media(Base):
-#     __tablename__ = 'medias'
+class MusicFile(Base):
+    __tablename__ = 'music_files'
 
-#     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-#     content_id = Column(UUID(as_uuid=True), ForeignKey('contents.id', ondelete='CASCADE'), nullable=False)
-#     media_url = Column(String, nullable=False)
-#     media_type = Column(Enum('image', 'video', name='media_type_enum'), nullable=False)
-#     thumb_filename = Column(String, nullable=True)
-#     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    filename = Column(String, nullable=False)
+    original_name = Column(String, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-#     contents = relationship("Content", back_populates="media", lazy="selectin")
+    user = relationship("User", backref="music_files", lazy="selectin")

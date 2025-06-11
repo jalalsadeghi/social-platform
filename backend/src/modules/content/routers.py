@@ -1,14 +1,17 @@
 # src/modules/conent/routers.py
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, UploadFile, File
 from fastapi.responses import StreamingResponse
 import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
-from uuid import UUID
+from uuid import UUID, uuid4
 from . import crud, schemas
+from .models import MusicFile
 from .scraper.scraper import scrape_and_extract
 from core.database import get_db
 from core.dependencies import get_current_user
+import shutil
+import os
 
 router = APIRouter(prefix="/contents", tags=["contents"])
 
@@ -104,3 +107,53 @@ async def delete_content(
     if not success:
         raise HTTPException(status_code=404, detail="Content not found")
     return {"detail": "Content deleted successfully"}
+
+
+@router.post("/upload-music/")
+async def upload_music(
+    music_file: UploadFile = File(...),
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        file_ext = os.path.splitext(music_file.filename)[1]
+        filename = f"{uuid4()}{file_ext}"
+        save_path = os.path.join("uploads/music", filename)
+
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        with open(save_path, "wb") as buffer:
+            shutil.copyfileobj(music_file.file, buffer)
+
+        music_record = MusicFile(
+            user_id=current_user.id,
+            filename=save_path,
+            original_name=music_file.filename
+        )
+        db.add(music_record)
+        await db.commit()
+        await db.refresh(music_record)
+
+        return {"music_id": music_record.id, "filename": music_record.filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/music/", response_model=List[schemas.MusicFileOut])
+async def get_music_files(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 30
+):
+    music_files = await crud.get_user_music_files(db, current_user.id, skip, limit)
+    return music_files
+
+@router.delete("/music/{music_id}", response_model=dict)
+async def delete_music(
+    music_id: UUID,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    success = await crud.delete_music_file(db, music_id, current_user.id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Music file not found")
+    return {"detail": "Music file deleted successfully"}
