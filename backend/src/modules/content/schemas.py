@@ -10,6 +10,13 @@ class ContentScraper(BaseModel):
     prompt_id: str 
     tip: str
 
+class ContentScrapedOut(BaseModel):
+    ai_title: str
+    ai_caption: str
+    ai_content: str
+    video_filename: str
+    thumb_filename: str
+
 class ContentBase(BaseModel):
     ai_title: str
     ai_caption: str

@@ -63,7 +63,7 @@ async def scrape_youtube_short(db: AsyncSession, url: str, prompt_id: str, tip: 
         "video_filename": video_filename,
         "thumb_filename": extract_info['thumb_filename'],
     }
-
+    print(result)
     return result
 
 
@@ -327,9 +327,7 @@ async def extract_ai_caption(
         }
     ]
     search_result = await generate_ai_content(search_prompt, "gpt-4o-mini-search-preview", int_max_tokens=500)
-    
-    print(f"search_prompt: {search_prompt}")
-    
+        
     content_list = [
         {"type": "text", "text": f"{search_result}\n\n{message_tip}"}
     ]
@@ -382,7 +380,6 @@ async def extract_ai_caption(
 
     ai_caption = await generate_ai_content(messages_caption, openai_model, max_tokens)
 
-    print(f"ai_caption: {ai_caption}")
     messages_content = [
         {
             "role": "system",
@@ -413,7 +410,6 @@ async def extract_ai_caption(
     
     
     ai_content = await generate_ai_content(messages_content, openai_model, 300)
-    print(f"ai_content: {ai_content}")
 
     messages_title = [
         {
@@ -442,7 +438,6 @@ async def extract_ai_caption(
     
     
     ai_title = await generate_ai_content(messages_title, openai_model, 300)
-    print(f"ai_title: {ai_title}")
     return ai_title, ai_caption, ai_content
     
 

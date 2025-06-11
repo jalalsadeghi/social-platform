@@ -12,7 +12,7 @@ from core.dependencies import get_current_user
 
 router = APIRouter(prefix="/contents", tags=["contents"])
 
-@router.post("/scrape/", response_model=schemas.ContentScraper)
+@router.post("/scrape/", response_model=schemas.ContentScrapedOut)
 async def scrape_content(
     content_scraper: schemas.ContentScraper,
     request: Request,
@@ -53,3 +53,54 @@ async def create_content(
     except Exception as e:
         print(f"Scraping error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+    
+@router.get("/", response_model=List[schemas.ContentOut])
+async def read_contents(
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 30
+):
+    contents = await crud.get_contents(db, current_user.id, skip, limit)
+    for content in contents:
+        content.platforms_id = [p.id for p in content.platform]
+    return contents
+
+
+@router.get("/{content_id}", response_model=schemas.ContentOut)
+async def read_content(
+    content_id: UUID,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    content = await crud.get_content_by_id(db, content_id, current_user.id)
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+    content.platforms_id = [p.id for p in content.platform]
+    return content
+
+
+@router.put("/{content_id}", response_model=schemas.ContentOut)
+async def update_content(
+    content_id: UUID,
+    content: schemas.ContentBase,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    updated_content = await crud.update_content(db, content_id, current_user.id, content)
+    if not updated_content:
+        raise HTTPException(status_code=404, detail="Content not found")
+    updated_content.platforms_id = [p.id for p in updated_content.platform]
+    return updated_content
+
+
+@router.delete("/{content_id}", response_model=dict)
+async def delete_content(
+    content_id: UUID,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    success = await crud.delete_content(db, content_id, current_user.id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Content not found")
+    return {"detail": "Content deleted successfully"}

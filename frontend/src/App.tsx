@@ -6,6 +6,7 @@ import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
 import DashboardPage from '@/pages/dashboard/DashboardPage';
 import ProductPage from '@/pages/dashboard/ProductPage';
+import ContentPage from '@/pages/dashboard/ContentPage';
 import RolesPage from '@/pages/dashboard/RolesPage';
 import PlanPage from '@/pages/dashboard/PlanPage';
 import PromptPage from '@/pages/dashboard/PromptPage';
@@ -22,6 +23,9 @@ function App() {
           <Route path="/" element={<DashboardPage />} />
           <Route element={<ProtectedRoute module="product" action="read" />}>
             <Route path="/products" element={<ProductPage />} />
+          </Route>
+          <Route element={<ProtectedRoute module="content" action="read" />}>
+            <Route path="/contents" element={<ContentPage />} />
           </Route>
           <Route element={<ProtectedRoute module="prompt" action="read" />}>
             <Route path="/prompts" element={<PromptPage />} />

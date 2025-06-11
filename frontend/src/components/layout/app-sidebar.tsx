@@ -53,6 +53,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   const navMain = [
     { title: "Products", url: "/products", icon: TableOfContentsIcon },
+    { title: "Contents", url: "/contents", icon: TableOfContentsIcon },
     { title: "Prompts", url: "/prompts", icon: BookAIcon },
     { title: "Platform", url: "/platforms", icon: UnplugIcon },
     { title: "Ask AI", url: "#", icon: Sparkles },
