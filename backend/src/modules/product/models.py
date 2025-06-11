@@ -8,19 +8,19 @@ from core.database import Base
 from sqlalchemy import Table
 import enum
 
-class QueueStatus(enum.Enum):
+class QueueStatusProduct(enum.Enum):
     pending = "pending"
     processing = "processing"
     ready = "ready"
     posted = "posted"
     failed = "failed"
 
-product_social_accounts = Table(
-    "product_social_accounts",
-    Base.metadata,
-    Column("product_id", UUID(as_uuid=True), ForeignKey("product.id", ondelete="CASCADE"), primary_key=True),
-    Column("social_account_id", UUID(as_uuid=True), ForeignKey("social_accounts.id", ondelete="CASCADE"), primary_key=True)
-)
+# product_social_accounts = Table(
+#     "product_social_accounts",
+#     Base.metadata,
+#     Column("product_id", UUID(as_uuid=True), ForeignKey("product.id", ondelete="CASCADE"), primary_key=True),
+#     Column("social_account_id", UUID(as_uuid=True), ForeignKey("social_accounts.id", ondelete="CASCADE"), primary_key=True)
+# )
 
 class Product(Base):
     __tablename__ = 'product'
@@ -31,13 +31,13 @@ class Product(Base):
     title = Column(String, nullable=False)
     description = Column(Text, nullable=True)
     ai_content = Column(Text, nullable=True)
-    status = Column(Enum(QueueStatus), default=QueueStatus.pending, index=True)
+    status = Column(Enum(QueueStatusProduct), default=QueueStatusProduct.pending, index=True)
     priority = Column(Integer, default=0)
     scheduled_time = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    platform = relationship("Platform", secondary=product_social_accounts, lazy="selectin")
+    # platform = relationship("Platform", secondary=product_social_accounts, lazy="selectin")
     user = relationship("User", backref="products", lazy="selectin")
     media = relationship("Media", cascade="all, delete-orphan", back_populates="product", lazy="selectin")
     instagram_stats = relationship("InstagramStats", cascade="all, delete-orphan", back_populates="product", lazy="selectin", uselist=False) 

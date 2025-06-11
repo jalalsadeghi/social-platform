@@ -1,4 +1,3 @@
-# backend/src/core/celery_app.py
 from celery import Celery
 from celery.schedules import crontab
 from core.config import settings
@@ -14,11 +13,12 @@ celery_app = Celery(
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
-        "modules.platform.instagram_bot.tasks.scheduler"
+        "modules.platform.instagram_bot.tasks.scheduler",
+        # "modules.tasks.test_tasks",
+        "modules.content.generate_video.task_generator_video"  # اضافه شدن وظایف تولید ویدئو
     ]
 )
 
-# تنظیمات Celery با Beat Schedule مستقیماً اینجا تعریف شود
 celery_app.conf.update(
     task_serializer='json',
     result_serializer='json',
@@ -29,9 +29,13 @@ celery_app.conf.update(
     beat_scheduler='celery.beat:PersistentScheduler',
     beat_schedule_filename='/tmp/celerybeat-schedule',
     beat_schedule={
-        "publish-instagram-posts-every-minute": {
-            "task": "modules.platform.instagram_bot.tasks.scheduler.schedule_test_call",
-            "schedule": crontab(hour=6, minute=0),  # هر دقیقه برای تست
+        # "print-hello-every-minute": {
+        #     "task": "modules.tasks.test_tasks.print_hello_world",
+        #     "schedule": crontab(),
+        # },
+        "video-generation-task": {
+            "task": "modules.content.generate_video.task_generator_video.generate_video_task",
+            "schedule": crontab(minute="*/1"),  # هر دقیقه
         },
     }
 )

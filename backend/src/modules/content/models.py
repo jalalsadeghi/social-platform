@@ -9,12 +9,14 @@ from sqlalchemy import Table
 import enum
 
 class QueueStatus(enum.Enum):
-    pending = "pending..."
-    processing = "processing..."
+    pending = "pending"
+    processing = "processing"
+    completed = "completed"
+    failed_generate = "failed_generate"
     ready = "ready"
-    posting= "posting..."
+    posting= "posting"
     posted = "posted"
-    failed = "failed"
+    failed_post = "failed_post"
 
 content_platforms = Table(
     "content_platform",

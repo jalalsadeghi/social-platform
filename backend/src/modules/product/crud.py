@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy import delete
 from datetime import datetime, timezone
-from .models import Product, Media, QueueStatus
+from .models import Product, Media, QueueStatusProduct
 from .schemas import ProductCreate, ProductUpdate
 from modules.platform.models import Platform
 import uuid
@@ -80,14 +80,14 @@ async def get_scheduled_products(db: AsyncSession, user_id: uuid.UUID, limit: in
     result = await db.execute(
         select(Product)
         .where(Product.user_id == user_id)
-        .where(Product.status == QueueStatus.ready)
+        .where(Product.status == QueueStatusProduct.ready)
         .where(Product.scheduled_time <= now)
         .order_by(Product.priority.desc(), Product.scheduled_time.asc())
         .limit(limit)
     )
     return result.scalars().all()
 
-async def update_product_status(db: AsyncSession, product_id: UUID, user_id: UUID, status: QueueStatus):
+async def update_product_status(db: AsyncSession, product_id: UUID, user_id: UUID, status: QueueStatusProduct):
     db_product = await get_product(db, product_id, user_id)
     if not db_product:
         return None

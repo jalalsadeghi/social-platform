@@ -1,7 +1,7 @@
 # backend/src/modules/platform/instagram_bot/services/instagram_post.py
 from ..utils.common import random_delay, safe_click, screenshot #mouse_move_click
 from modules.product.crud import get_scheduled_products, update_product_status
-from modules.product.models import QueueStatus
+from modules.product.models import QueueStatusProduct
 from sqlalchemy.ext.asyncio import AsyncSession
 from playwright.async_api import async_playwright
 import random
@@ -18,7 +18,7 @@ async def post_to_instagram(db, user_id, page):
     product = scheduled_products[0]
 
     # Update product status to processing
-    await update_product_status(db, product.id, user_id, QueueStatus.processing)
+    await update_product_status(db, product.id, user_id, QueueStatusProduct.processing)
 
     video_file = [media.media_url for media in product.media]
     thumbnail_file = [media.local_path for media in product.media]
@@ -109,7 +109,7 @@ async def post_to_instagram(db, user_id, page):
         await page.wait_for_selector(error_popup_selector, state='visible', timeout=5000)
         print("⚠️ Error popup detected. Closing popup.")
         #Update product status to posted after successful upload
-        await update_product_status(db, product.id, user_id, QueueStatus.ready)
+        await update_product_status(db, product.id, user_id, QueueStatusProduct.ready)
 
         clicked = await safe_click(page, close_button_selector, "220_wrong")
 
@@ -123,7 +123,7 @@ async def post_to_instagram(db, user_id, page):
         print("🎉 Post shared successfully.")
 
         #Update product status to posted after successful upload
-        await update_product_status(db, product.id, user_id, QueueStatus.posted)
+        await update_product_status(db, product.id, user_id, QueueStatusProduct.posted)
 
         await screenshot(page, "220_successfully")
 

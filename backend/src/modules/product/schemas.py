@@ -3,7 +3,7 @@ from pydantic import BaseModel, UUID4, HttpUrl
 from typing import List, Optional
 from datetime import datetime
 from enum import Enum
-from .models import QueueStatus
+from .models import QueueStatusProduct
 from uuid import UUID
 
 class MediaType(str, Enum):
@@ -47,13 +47,13 @@ class ProductCreate(ProductBase):
 class ProductUpdate(ProductBase):
     media: Optional[List[MediaCreate]] = []
     social_account_ids: Optional[List[UUID]] = []
-    status: Optional[QueueStatus] = None
+    status: Optional[QueueStatusProduct] = None
     priority: Optional[int] = None
     scheduled_time: Optional[datetime] = None
 
 class ProductOut(ProductBase):
     id: UUID4
-    status: QueueStatus
+    status: QueueStatusProduct
     priority: int
     scheduled_time: Optional[datetime]
     created_at: datetime

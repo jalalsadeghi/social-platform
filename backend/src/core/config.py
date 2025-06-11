@@ -8,6 +8,7 @@ class Settings:
     DATABASE_URL: str = os.getenv("DATABASE_URL")
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
+    SYNC_DATABASE_URL: str = os.getenv("SYNC_DATABASE_URL")
 
     # Instagram/Facebook OAuth Settings
     INSTAGRAM_CLIENT_ID: str = os.getenv("INSTAGRAM_CLIENT_ID")

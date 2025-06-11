@@ -2,6 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from sqlalchemy.future import select
+from sqlalchemy import func
 from .models import Content, QueueStatus, MusicFile
 from modules.platform.models import Platform
 from datetime import datetime
@@ -88,3 +89,18 @@ async def delete_music_file(db: AsyncSession, music_id: UUID, user_id: UUID) -> 
     await db.delete(music_file)
     await db.commit()
     return True
+
+async def get_exist_processing_video(session: AsyncSession) -> Optional[Content]:
+    #Check if there's any video currently being processed
+    processing_count = await session.execute(
+        select(func.count()).select_from(Content).where(Content.status == QueueStatus.processing)
+    )
+    return processing_count.scalar_one()
+
+async def get_next_pending_video(session: AsyncSession) -> Optional[Content]:
+    result = await session.execute(
+        select(Content)
+        .where(Content.status == QueueStatus.pending)
+        .order_by(Content.created_at.asc())
+    )
+    return result.scalars().first()
