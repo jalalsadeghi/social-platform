@@ -14,8 +14,7 @@ celery_app = Celery(
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
         "modules.platform.instagram_bot.tasks.scheduler",
-        # "modules.tasks.test_tasks",
-        "modules.content.generate_video.task_generator_video"  # اضافه شدن وظایف تولید ویدئو
+        "modules.content.generate_video.task_generator_video"
     ]
 )
 
@@ -26,13 +25,10 @@ celery_app.conf.update(
     timezone='UTC',
     enable_utc=True,
     broker_connection_retry_on_startup=True,
+    task_track_started=True, 
     beat_scheduler='celery.beat:PersistentScheduler',
     beat_schedule_filename='/tmp/celerybeat-schedule',
     beat_schedule={
-        # "print-hello-every-minute": {
-        #     "task": "modules.tasks.test_tasks.print_hello_world",
-        #     "schedule": crontab(),
-        # },
         "video-generation-task": {
             "task": "modules.content.generate_video.task_generator_video.generate_video_task",
             "schedule": crontab(minute="*/1"),  # هر دقیقه
