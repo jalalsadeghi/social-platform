@@ -1,6 +1,6 @@
 // src/components/content/ContentDialog.tsx
 import React, { useState, useEffect } from "react";
-import { useContent } from "@/hooks/useContents";
+import { useContent, useMusicFiles  } from "@/hooks/useContents";
 import { usePrompts } from "@/hooks/usePrompts";
 import { usePlatform } from "@/hooks/usePlatform";
 import { uploadFile } from "@/services/upload";
@@ -29,6 +29,7 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
   const { scrapeMutation, createMutation, updateMutation } = useContent();
   const { promptsQuery } = usePrompts();
   const { platformsQuery } = usePlatform();
+  const { data: musicFiles = [] } = useMusicFiles();
 
   const prompts = promptsQuery.data?.pages.flat() || [];
   const platforms = platformsQuery.data?.pages.flat() || [];
@@ -36,6 +37,9 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
   const [selectedPrompt, setSelectedPrompt] = useState(initialData?.prompt_id || "");
   const [url, setUrl] = useState(initialData?.content_url || "");
   const [tip, setTip] = useState("");
+  const [removeAudio, setRemoveAudio] = useState<boolean>(initialData?.remove_audio || false);
+  const [selectedMusicId, setSelectedMusicId] = useState<string | null>(initialData?.music_id || null);
+
 
   const [scrapedData, setScrapedData] = useState({
     ai_title: initialData?.ai_title || "",
@@ -92,6 +96,8 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
       content_url: url,
       video_filename: scrapedData.video_filename,
       thumb_filename: finalThumb,
+      remove_audio: removeAudio,
+      music_id: selectedMusicId,
     };
 
     if (initialData?.id) {
@@ -174,6 +180,37 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
                 </div>
               ))}
             </div>
+
+            {/* <div className="mt-4"> */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="remove-audio"
+                checked={removeAudio}
+                onCheckedChange={(checked) => setRemoveAudio(!!checked)}
+              />
+              <Label htmlFor="remove-audio">Remove Audio from Video</Label>
+            </div>
+
+            <div className="mt-4">
+              <Label htmlFor="music-select">Select Music:</Label>
+              <Select
+                value={selectedMusicId || "none"}
+                onValueChange={(value) => setSelectedMusicId(value !== "none" ? value : null)}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select a music file (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  {musicFiles.map((music) => (
+                    <SelectItem key={music.id} value={music.id}>
+                      {music.original_name || music.filename}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {/* </div> */}
 
             <input type="file" accept="image/*" onChange={handleThumbnailChange} />
             {thumbnailPreview && (

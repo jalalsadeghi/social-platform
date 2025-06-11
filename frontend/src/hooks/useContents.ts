@@ -7,12 +7,14 @@ import {
   getContentById,
   updateContent,
   deleteContent,
+  getMusicFiles,
 } from "@/services/content";
 import type {
   ContentCreate,
   ContentScraperRequest,
   ContentUpdate,
   Content,
+  MusicFile,
 } from "@/services/content";
 import { toast } from "sonner";
 
@@ -82,5 +84,13 @@ export const useContentById = (id: string) => {
     queryKey: ["content", id],
     queryFn: () => getContentById(id),
     enabled: !!id,
+  });
+};
+
+// Get user's music files
+export const useMusicFiles = () => {
+  return useQuery<MusicFile[], Error>({
+    queryKey: ["musicFiles"],
+    queryFn: () => getMusicFiles(),
   });
 };
