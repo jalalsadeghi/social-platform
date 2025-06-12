@@ -29,7 +29,7 @@ from modules.product.models import Product, Media, InstagramStats
 from modules.user.models import User, Role
 from modules.plan.models import Plan, Subscription
 from modules.platform.instagram.models import InstagramIntegration, InstagramActionLog
-from modules.platform.instagram_bot.models import InstagramBotReport
+# from modules.platform.instagram_bot.models import InstagramBotReport
 from modules.post.models import Post, Comment
 from modules.reports.models import PerformanceReport
 from modules.payment.models import Payment

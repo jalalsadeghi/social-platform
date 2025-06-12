@@ -12,6 +12,14 @@ from core.database import get_db
 from core.dependencies import get_current_user
 import shutil
 import os
+from core.config import settings
+import redis
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+redis_client = redis.Redis.from_url(settings.CELERY_BROKER_URL)
 
 router = APIRouter(prefix="/contents", tags=["contents"])
 
@@ -157,3 +165,28 @@ async def delete_music(
     if not success:
         raise HTTPException(status_code=404, detail="Music file not found")
     return {"detail": "Music file deleted successfully"}
+
+
+@router.get("/status/progress")
+async def get_current_video_progress():
+    print(f"get_current_video_progress: OK")
+    
+    progress = redis_client.get("current_video_progress")
+    print(f"current_video_progress: {progress}")
+
+    if progress is None:
+        logger.warning("Progress key not found in Redis.")
+        return {"progress": "No task running"}
+
+    progress = progress.decode()
+
+    try:
+        progress_value = int(progress)
+        return {"progress": progress_value}
+    except ValueError:
+        # Handling special states like "no_pending", "failed", etc.
+        if progress in ["no_pending", "failed"]:
+            return {"progress": progress}
+        
+        logger.error(f"Unexpected progress value: {progress}")
+        raise HTTPException(status_code=500, detail="Invalid progress value")

@@ -58,3 +58,6 @@ class MusicFileOut(BaseModel):
     class Config:
         from_attributes = True
 
+class ProgressResponse(BaseModel):
+    progress: str
+

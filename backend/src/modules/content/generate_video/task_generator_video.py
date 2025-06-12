@@ -24,8 +24,8 @@ def generate_video_task(self):
     try:
         have_lock = lock.acquire(blocking=False)
         if not have_lock:
-            logging.info("Another task is already running.")
-            return {"status": "skipped", "message": "Another task is already running"}
+            logging.info("Another Video task is already running.")
+            return {"status": "skipped", "message": "Another Video task is already running"}
 
         logging.info("Checking for pending videos to generate...")
 
@@ -43,6 +43,7 @@ def generate_video_task(self):
         ).scalars().first()
 
         if not pending:
+            redis_client.set("current_video_progress", "ready")
             logging.info("No pending videos.")
             return {"status": "no_pending", "message": "No pending videos"}
 
@@ -50,6 +51,7 @@ def generate_video_task(self):
         pending.status = QueueStatus.processing
         session.commit()
 
+        redis_client.set("current_video_progress", 0)
         logging.info(f"Video status updated to processing: {pending.id}")
 
         final_video_filename = asyncio.run(generate_audio_and_video(
@@ -60,6 +62,7 @@ def generate_video_task(self):
         pending.video_filename = final_video_filename
         session.commit()
 
+        redis_client.set("current_video_progress", 100)
         logging.info(f"Video processing completed successfully: {pending.id}")
 
         return {
@@ -75,6 +78,7 @@ def generate_video_task(self):
                 pending.status = QueueStatus.failed_generate
                 session.commit()
 
+        redis_client.set("current_video_progress", "failed")
         logging.error(f"An error occurred: {e}")
 
         self.update_state(

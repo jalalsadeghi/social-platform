@@ -2,9 +2,11 @@
 import { useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { useContent } from "@/hooks/useContents";
+import { useCurrentVideoProgress } from "@/hooks/useContents";
 import { useQuery } from "@tanstack/react-query";
 import { ContentDialog } from "./ContentDialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -34,10 +36,14 @@ const fetchContents = async ({ pageParam = 0 }): Promise<Content[]> => {
   return res.data;
 };
 
+
+
 export const ContentTable = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const { deleteMutation } = useContent();
+  const { data: currentProgress } = useCurrentVideoProgress();
+  console.log("currentProgress:", currentProgress?.progress)
 
   const contentsQuery = useQuery({
     queryKey: ["contents"],
@@ -108,7 +114,17 @@ export const ContentTable = () => {
                   />
                 </TableCell>
                 <TableCell>{content.ai_title}</TableCell>
-                <TableCell>{content.status}</TableCell>
+                <TableCell>
+                  {content.status === 'processing' && currentProgress?.progress !== undefined ? (
+                    typeof currentProgress.progress === 'number' ? (
+                      <Progress value={currentProgress.progress} className="w-32" />
+                    ) : (
+                      currentProgress.progress
+                    )
+                  ) : (
+                    content.status
+                  )}
+                </TableCell>
                 <TableCell>
                   {new Date(content.created_at).toLocaleString()}
                 </TableCell>

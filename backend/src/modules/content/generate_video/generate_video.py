@@ -8,6 +8,7 @@ from PIL import Image
 from io import BytesIO
 import re
 import json
+import redis
 from pydub import AudioSegment
 from uuid import uuid4
 from openai import OpenAI
@@ -19,7 +20,10 @@ from moviepy.video.VideoClip import TextClip
 from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 from proglog import ProgressBarLogger
 import logging
+
 logging.basicConfig(level=logging.INFO)
+
+redis_client = redis.Redis.from_url(settings.CELERY_BROKER_URL)
 
 UPLOAD_DIRECTORY = settings.UPLOAD_DIRECTORY
 
@@ -72,7 +76,8 @@ class MyProgressLogger(ProgressBarLogger):
         total = self.bars[bar]['total']
         percent = int(value / total * 100)
         if bar == 'frame_index':
-            if percent % 10 == 0 and old_value is not None and int(old_value/total*100) != percent:
+            if percent % 3 == 0 and old_value is not None and int(old_value/total*100) != percent:
+                redis_client.set("current_video_progress", percent)
                 logging.info(f"🔄 Rendering video: {percent}%")
         super().bars_callback(bar, attr, value, old_value)
 
@@ -127,5 +132,6 @@ async def generate_video(audio_filename, video_filename, random_name):
         logger=logger,
     )
 
+    
     return final_video_filename
     

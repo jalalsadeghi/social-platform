@@ -96,3 +96,9 @@ export const getMusicFiles = async (skip = 0, limit = 30): Promise<MusicFile[]> 
   const response = await api.get(`/contents/music/?skip=${skip}&limit=${limit}`);
   return response.data;
 };
+
+// Current progress video
+export const getCurrentVideoProgress = async (): Promise<{ progress: number | string }> => {
+  const response = await api.get(`/contents/status/progress`);
+  return response.data;
+};

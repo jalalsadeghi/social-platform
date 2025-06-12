@@ -8,6 +8,7 @@ import {
   updateContent,
   deleteContent,
   getMusicFiles,
+  getCurrentVideoProgress, 
 } from "@/services/content";
 import type {
   ContentCreate,
@@ -16,6 +17,8 @@ import type {
   Content,
   MusicFile,
 } from "@/services/content";
+// import { getCurrentVideoProgress } from "@/services/content";
+
 import { toast } from "sonner";
 
 export const useContent = () => {
@@ -92,5 +95,13 @@ export const useMusicFiles = () => {
   return useQuery<MusicFile[], Error>({
     queryKey: ["musicFiles"],
     queryFn: () => getMusicFiles(),
+  });
+};
+
+export const useCurrentVideoProgress = () => {
+  return useQuery<{ progress: number | string }, Error>({
+    queryKey: ["currentVideoProgress"],
+    queryFn: getCurrentVideoProgress,
+    refetchInterval: 5000, // هر 5 ثانیه وضعیت به‌روز شود
   });
 };
