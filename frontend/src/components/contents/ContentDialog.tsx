@@ -37,7 +37,7 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
   const [selectedPrompt, setSelectedPrompt] = useState(initialData?.prompt_id || "");
   const [url, setUrl] = useState(initialData?.content_url || "");
   const [tip, setTip] = useState("");
-  const [removeAudio, setRemoveAudio] = useState<boolean>(initialData?.remove_audio || false);
+  const [removeAudio, setRemoveAudio] = useState<boolean>(initialData?.remove_audio ?? false);
   const [selectedMusicId, setSelectedMusicId] = useState<string | null>(initialData?.music_id || null);
 
 
@@ -49,7 +49,10 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
     thumb_filename: initialData?.thumb_filename || "",
   });
 
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(initialData?.platforms_id || []);
+  // const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(initialData?.platforms_id || []);
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(
+    initialData?.platforms_status?.map((ps: { platform_id: string }) => ps.platform_id) || []
+  );
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState(
     initialData ? `${api.defaults.baseURL}/${initialData.thumb_filename}` : ""

@@ -60,9 +60,9 @@ export const ProductDialog: React.FC<Props> = ({
 }) => {
   const { createMutation, updateMutation } = useProducts();
   const { data: socialAccounts } = useUserSocialAccounts();
-  useEffect(() => {
-    console.log('socialAccounts:', socialAccounts);
-  }, [socialAccounts]);
+  // useEffect(() => {
+  //   console.log('socialAccounts:', socialAccounts);
+  // }, [socialAccounts]);
 
 
   const [formData, setFormData] = useState({
@@ -166,7 +166,7 @@ export const ProductDialog: React.FC<Props> = ({
       social_account_ids: selectedAccounts,
     };
     
-    console.log("productData:", productData);
+    // console.log("productData:", productData);
     productId
       ? updateMutation.mutate({ id: productId, data: productData })
       : createMutation.mutate(productData);

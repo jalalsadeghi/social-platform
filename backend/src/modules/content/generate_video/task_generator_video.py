@@ -2,7 +2,7 @@ from celery import shared_task
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from core.sync_database import SyncSession
-from ..models import QueueStatus, Content
+from modules.content.models import QueueStatus, Content
 from .generate_video import generate_audio_and_video
 import logging
 import asyncio
@@ -19,6 +19,7 @@ def generate_video_task(self):
     have_lock = False
     lock = redis_client.lock(lock_id, timeout=LOCK_EXPIRE)
 
+    pending = None
     session = None
 
     try:

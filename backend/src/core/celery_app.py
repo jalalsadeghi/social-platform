@@ -13,7 +13,7 @@ celery_app = Celery(
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
-        "modules.platform.instagram_bot.tasks.scheduler",
+        # "modules.platform.instagram_bot.tasks.scheduler",
         "modules.content.generate_video.task_generator_video"
     ]
 )
@@ -33,10 +33,10 @@ celery_app.conf.update(
             "task": "modules.content.generate_video.task_generator_video.generate_video_task",
             "schedule": crontab(minute="*/1"),  # هر دقیقه
         },
-        "post-executor-task": {
-            "task": "modules.platform.instagram_bot.tasks.scheduler.generate_reels_task",
-            "schedule": crontab(minute="*/1"),  # هر دقیقه
-        },
+        # "post-executor-task": {
+        #     "task": "modules.platform.instagram_bot.tasks.scheduler.generate_reels_task",
+        #     "schedule": crontab(minute="*/1"),  # هر دقیقه
+        # },
     }
 )
 

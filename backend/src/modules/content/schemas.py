@@ -1,7 +1,7 @@
 # src/modules/content/schemas.py
 from pydantic import BaseModel, UUID4, HttpUrl
 from typing import List, Optional
-from .models import QueueStatus
+from .models import QueueStatus, PostStatus
 from uuid import UUID
 from datetime import datetime
 
@@ -17,11 +17,18 @@ class ContentScrapedOut(BaseModel):
     video_filename: str
     thumb_filename: str
 
+
+class ContentPlatformStatus(BaseModel):
+    platform_id: UUID
+    status: PostStatus
+
+    class Config:
+        from_attributes = True
+        
 class ContentBase(BaseModel):
     ai_title: str
     ai_caption: str
     ai_content: str
-    platforms_id: List[UUID]
     content_url: str
     video_filename: str
     thumb_filename: str
@@ -29,17 +36,12 @@ class ContentBase(BaseModel):
     music_id: Optional[UUID] = None
 
 class ContentCreate(ContentBase):
-    pass
-
-class ContentGenerate(BaseModel):
-    ai_caption: str
-    video_filename: str 
-    random_name: str
+    platforms_id: List[UUID]
 
 class ContentOut(ContentBase):
     id: UUID
     user_id: UUID
-    platforms_id: List[UUID]
+    platforms_status: List[ContentPlatformStatus]
     status: QueueStatus
     priority: int
     scheduled_time: Optional[datetime]
@@ -49,6 +51,11 @@ class ContentOut(ContentBase):
     class Config:
         from_attributes = True
 
+class ContentGenerate(BaseModel):
+    ai_caption: str
+    video_filename: str 
+    random_name: str
+
 class MusicFileOut(BaseModel):
     id: UUID
     filename: str
@@ -57,7 +64,4 @@ class MusicFileOut(BaseModel):
 
     class Config:
         from_attributes = True
-
-class ProgressResponse(BaseModel):
-    progress: str
 

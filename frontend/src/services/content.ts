@@ -15,6 +15,11 @@ export interface ContentScraperResponse {
   thumb_filename: string;
 }
 
+export interface ContentPlatformStatus {
+  platform_id: string;
+  status: string; 
+}
+
 export interface ContentCreate {
   ai_title: string;
   ai_caption: string;
@@ -43,6 +48,7 @@ export interface Content {
   music_id?: string | null;
   status: string;
   priority: number;
+  platforms_status: ContentPlatformStatus[];
   scheduled_time?: string;
   created_at: string;
   updated_at: string;
@@ -70,6 +76,7 @@ export const createContent = async (data: ContentCreate): Promise<Content> => {
 // Fetch contents (list with pagination)
 export const getContents = async (skip = 0, limit = 30): Promise<Content[]> => {
   const response = await api.get(`/contents?skip=${skip}&limit=${limit}`);
+  
   return response.data;
 };
 

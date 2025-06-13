@@ -1,13 +1,6 @@
-# core/sync_database.py
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from core.config import settings
+from core.database import Base
 
-SYNC_DATABASE_URL = settings.SYNC_DATABASE_URL  # مثلا "postgresql://user:pass@host/db"
-
-engine_sync = create_engine(SYNC_DATABASE_URL)
-SyncSession = sessionmaker(bind=engine_sync, autocommit=False, autoflush=False)
-
+# از همه ماژول‌ها مدل‌ها را اینجا وارد کنید
 from modules.product.models import Product, Media, InstagramStats
 from modules.user.models import User, Role
 from modules.plan.models import Plan, Subscription
@@ -20,3 +13,18 @@ from modules.logs.models import AppLog
 from modules.ai.models import AIPrompt
 from modules.platform.models import Platform
 from modules.content.models import Content, MusicFile
+
+__all__ = [
+    "Product", "Media", "InstagramStats",
+    "User", "Role",
+    "Plan", "Subscription",
+    "InstagramIntegration", "InstagramActionLog",
+    "InstagramBotReport",
+    "Post", "Comment",
+    "PerformanceReport",
+    "Payment",
+    "AppLog",
+    "AIPrompt",
+    "Platform",
+    "Content", "MusicFile"
+]

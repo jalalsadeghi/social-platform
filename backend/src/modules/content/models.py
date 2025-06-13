@@ -11,19 +11,27 @@ import enum
 class QueueStatus(enum.Enum):
     pending = "pending"
     processing = "processing"
-    completed = "completed"
     failed_generate = "failed_generate"
     ready = "ready"
-    posting= "posting"
-    posted = "posted"
-    failed_post = "failed_post"
 
-content_platforms = Table(
-    "content_platform",
-    Base.metadata,
-    Column("content_id", UUID(as_uuid=True), ForeignKey("contents.id", ondelete="CASCADE"), primary_key=True),
-    Column("platform_id", UUID(as_uuid=True), ForeignKey("platforms.id", ondelete="CASCADE"), primary_key=True)
-)
+class PostStatus(enum.Enum):
+    pending = "pending"
+    posting = "posting"
+    posted = "posted"
+    failed = "failed"
+
+class ContentPlatform(Base):
+    __tablename__ = 'content_platforms'
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    content_id = Column(UUID(as_uuid=True), ForeignKey('contents.id', ondelete='CASCADE'), nullable=False)
+    platform_id = Column(UUID(as_uuid=True), ForeignKey('platforms.id', ondelete='CASCADE'), nullable=False)
+    status = Column(Enum(PostStatus), default=PostStatus.pending, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    content = relationship("Content", back_populates="content_platforms")
+    platform = relationship("Platform", back_populates="content_platforms")
 
 class Content(Base):
     __tablename__ = 'contents'
@@ -44,7 +52,7 @@ class Content(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    platform = relationship("Platform", secondary=content_platforms, lazy="selectin")
+    content_platforms = relationship("ContentPlatform", back_populates="content", lazy="selectin")
     user = relationship("User", backref="contents", lazy="selectin")
     music = relationship("MusicFile", backref="contents", lazy="selectin")
 
@@ -58,3 +66,5 @@ class MusicFile(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", backref="music_files", lazy="selectin")
+
+

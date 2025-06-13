@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from sqlalchemy.future import select
 from sqlalchemy import func
-from .models import Content, QueueStatus, MusicFile
+from .models import Content, QueueStatus, MusicFile, ContentPlatform, PostStatus
 from modules.platform.models import Platform
 from datetime import datetime
 from typing import List, Optional
@@ -25,13 +25,21 @@ async def create_content(db: AsyncSession, content: ContentCreate, user_id: UUID
         music_id=content.music_id,
         status=QueueStatus.pending,
         scheduled_time=datetime.utcnow(),
-        platform=platforms
     )
 
     db.add(db_content)
+    await db.flush()
+
+    for platform in platforms:
+        content_platform = ContentPlatform(
+            content_id=db_content.id,
+            platform_id=platform.id,
+            status=PostStatus.pending
+        )
+        db.add(content_platform)
+
     await db.commit()
     await db.refresh(db_content)
-
     return db_content
 
 async def get_contents(db: AsyncSession, user_id: UUID, skip=0, limit=30) -> List[Content]:
@@ -53,9 +61,21 @@ async def update_content(
     if not db_content:
         return None
 
-    platforms = await db.execute(select(Platform).where(Platform.id.in_(data.platforms_id)))
-    db_content.platform = platforms.scalars().all()
+    # حذف روابط قبلی
+    await db.execute(
+        select(ContentPlatform).where(ContentPlatform.content_id == db_content.id).delete()
+    )
 
+    # اضافه کردن روابط جدید با وضعیت پیشفرض
+    for platform_id in data.platforms_id:
+        db_content_platform = ContentPlatform(
+            content_id=db_content.id,
+            platform_id=platform_id,
+            status=PostStatus.pending
+        )
+        db.add(db_content_platform)
+
+    # به روزرسانی سایر فیلدها
     update_fields = data.dict(exclude_unset=True, exclude={"platforms_id"})
     for field, value in update_fields.items():
         setattr(db_content, field, value)
@@ -63,6 +83,7 @@ async def update_content(
     await db.commit()
     await db.refresh(db_content)
     return db_content
+
 
 async def delete_content(db: AsyncSession, content_id: UUID, user_id: UUID) -> bool:
     db_content = await get_content_by_id(db, content_id, user_id)

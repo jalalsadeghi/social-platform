@@ -74,7 +74,10 @@ async def read_contents(
 ):
     contents = await crud.get_contents(db, current_user.id, skip, limit)
     for content in contents:
-        content.platforms_id = [p.id for p in content.platform]
+        content.platforms_status = [
+            {"platform_id": cp.platform_id, "status": cp.status}
+            for cp in content.content_platforms
+        ]
     return contents
 
 
@@ -87,7 +90,12 @@ async def read_content(
     content = await crud.get_content_by_id(db, content_id, current_user.id)
     if not content:
         raise HTTPException(status_code=404, detail="Content not found")
-    content.platforms_id = [p.id for p in content.platform]
+
+    content.platforms_status = [
+        {"platform_id": cp.platform_id, "status": cp.status}
+        for cp in content.content_platforms
+    ]
+
     return content
 
 

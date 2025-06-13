@@ -25,4 +25,5 @@ class Platform(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    users = relationship("User", back_populates="platform", lazy="joined")
+    user = relationship("User", back_populates="platforms", lazy="joined")
+    content_platforms = relationship("ContentPlatform", back_populates="platform", lazy="selectin")

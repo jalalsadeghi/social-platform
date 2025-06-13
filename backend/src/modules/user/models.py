@@ -36,5 +36,5 @@ class User(Base):
     role = relationship("Role", back_populates="users", lazy="joined")
     plan = relationship("Plan", back_populates="users", lazy="joined")
     subscriptions = relationship("Subscription", back_populates="user", lazy="selectin")
-    platform = relationship("Platform", back_populates="users", lazy="selectin")
+    platforms = relationship("Platform", back_populates="user", lazy="selectin")
     ai_prompts = relationship("AIPrompt", back_populates="users", lazy="selectin")
