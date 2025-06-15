@@ -31,16 +31,22 @@ async def create_content(db: AsyncSession, content: ContentCreate, user_id: UUID
     await db.flush()
 
     for platform in platforms:
+        if content.priority_zero:
+            priority = 0
+        else:
+            priority = await get_max_priority(db, user_id, platform.id) + 1
         content_platform = ContentPlatform(
             content_id=db_content.id,
             platform_id=platform.id,
-            status=PostStatus.pending
+            status=PostStatus.pending,
+            priority=priority
         )
         db.add(content_platform)
 
     await db.commit()
     await db.refresh(db_content)
     return db_content
+
 
 async def get_contents(db: AsyncSession, user_id: UUID, skip=0, limit=30) -> List[Content]:
     result = await db.execute(
@@ -61,21 +67,20 @@ async def update_content(
     if not db_content:
         return None
 
-    # حذف روابط قبلی
     await db.execute(
-        select(ContentPlatform).where(ContentPlatform.content_id == db_content.id).delete()
+        ContentPlatform.__table__.delete().where(ContentPlatform.content_id == db_content.id)
     )
 
-    # اضافه کردن روابط جدید با وضعیت پیشفرض
     for platform_id in data.platforms_id:
+        priority = await get_max_priority(db, user_id, platform_id) + 1
         db_content_platform = ContentPlatform(
             content_id=db_content.id,
             platform_id=platform_id,
-            status=PostStatus.pending
+            status=PostStatus.pending,
+            priority=priority
         )
         db.add(db_content_platform)
 
-    # به روزرسانی سایر فیلدها
     update_fields = data.dict(exclude_unset=True, exclude={"platforms_id"})
     for field, value in update_fields.items():
         setattr(db_content, field, value)
@@ -83,6 +88,20 @@ async def update_content(
     await db.commit()
     await db.refresh(db_content)
     return db_content
+
+
+async def get_max_priority(db: AsyncSession, user_id: UUID, platform_id: UUID) -> int:
+    result = await db.execute(
+        select(func.max(ContentPlatform.priority))
+        .join(Content)
+        .where(
+            Content.user_id == user_id,
+            ContentPlatform.platform_id == platform_id,
+            ContentPlatform.status == PostStatus.pending
+        )
+    )
+    max_priority = result.scalar()
+    return max_priority if max_priority is not None else 0
 
 
 async def delete_content(db: AsyncSession, content_id: UUID, user_id: UUID) -> bool:

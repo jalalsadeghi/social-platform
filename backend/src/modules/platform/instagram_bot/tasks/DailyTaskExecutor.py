@@ -2,41 +2,32 @@
 
 import asyncio
 import random
+import redis
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from core.database import engine
+from core.config import settings
 from modules.platform.instagram_bot.services.instagram_post import post_to_instagram
 from modules.platform.instagram_bot.services.instagram_comment import comment_to_instagram
 from modules.platform.instagram_bot.services.instagram_like import like_to_instagram
-from modules.platform.instagram_bot.services.secure_credentials import get_social_credentials
 from modules.platform.instagram_bot.services.instagram_client import login_instagram
+from modules.platform.crud import get_platform
 from modules.plan.crud import get_active_subscription
 from modules.platform.instagram_bot.utils.common import random_delay
 from modules.product.crud import get_scheduled_products
 from playwright.async_api import async_playwright
+import logging
+from uuid import UUID
 
+logging.basicConfig(level=logging.INFO)
 
-async def execute_daily_tasks(user_id):
+redis_client = redis.Redis.from_url(settings.CELERY_BROKER_URL)
+
+async def generate_instagram_posting(content_id: UUID, user_id: UUID, platform_id: UUID):
     session_maker = async_sessionmaker(engine, expire_on_commit=False)
     async with session_maker() as db:
-        subscription = await get_active_subscription(db, user_id)
+        print(f"2. Content ID: {content_id}, 2. Platform: {platform_id}, 2. user_id{user_id}")
 
-        if not subscription:
-            print("No active subscription found.")
-            return
-
-        features = subscription.plan.features
-        requested_post_count = int(features.get("Post", 0))
-        print("Befor get_scheduled_products.")
-        scheduled_products = await get_scheduled_products(db, user_id, limit=requested_post_count)
-        available_post_count = len(scheduled_products)
-        print("After get_scheduled_products.")
-        post_count = min(requested_post_count, available_post_count)
-        comment_count = int(features.get("comment", 0))
-        like_count = int(features.get("like", 0))
-
-        print(post_count, comment_count, like_count)
-
-        creds = await get_social_credentials(db, user_id, "instagram")
+        creds = await get_platform(db, platform_id, user_id)
 
         async with async_playwright() as p:
             browser_args = [
@@ -64,7 +55,8 @@ async def execute_daily_tasks(user_id):
                 username=creds["username"],
                 password=creds["password"],
                 page=page,
-                context=context
+                context=context,
+                cookies=creds["cookies"],
             )
 
             if not login_result["success"]:
@@ -74,35 +66,24 @@ async def execute_daily_tasks(user_id):
 
             print("Logged in successfully.")
 
-            tasks = (["post"] * post_count) + (["comment"] * comment_count) + (["like"] * like_count)
-            random.shuffle(tasks)
+#             tasks = (["post"] * post_count) + (["comment"] * comment_count) + (["like"] * like_count)
+#             random.shuffle(tasks)
 
-            for task in tasks:
-                if task == "post":
-                    await post_to_instagram(db, user_id, page)
-                    print("Post executed", task)
+#             for task in tasks:
+#                 if task == "post":
+#                     await post_to_instagram(db, user_id, page)
+#                     print("Post executed", task)
 
-                elif task == "comment":
-                    await comment_to_instagram(page)
-                    print("Comment executed", task)
+#                 elif task == "comment":
+#                     await comment_to_instagram(page)
+#                     print("Comment executed", task)
 
-                elif task == "like":
-                    await like_to_instagram(page)
-                    print("Like executed", task)
+#                 elif task == "like":
+#                     await like_to_instagram(page)
+#                     print("Like executed", task)
 
-                await random_delay(2, 10)
+#                 await random_delay(2, 10)
 
-            await browser.close()
+#             await browser.close()
 
-        print("All daily tasks executed successfully.")
-
-
-# این تابع را مستقیماً توسط celery فراخوانی کنید
-async def daily_tasks(user_id):
-    """Execute daily tasks for a user."""
-    try:
-        await execute_daily_tasks(user_id)
-        return True
-    except Exception as e:
-        print(f"Error executing daily tasks: {str(e)}")
-        return False
+#         print("All daily tasks executed successfully.")

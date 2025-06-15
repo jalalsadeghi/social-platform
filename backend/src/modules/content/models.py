@@ -25,8 +25,9 @@ class ContentPlatform(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     content_id = Column(UUID(as_uuid=True), ForeignKey('contents.id', ondelete='CASCADE'), nullable=False)
-    platform_id = Column(UUID(as_uuid=True), ForeignKey('platforms.id', ondelete='CASCADE'), nullable=False)
+    platform_id = Column(UUID(as_uuid=True), ForeignKey('platforms.id', ondelete='CASCADE'), nullable=False, index=True)
     status = Column(Enum(PostStatus), default=PostStatus.pending, nullable=False)
+    priority = Column(Integer, default=0, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
@@ -47,12 +48,11 @@ class Content(Base):
     remove_audio = Column(Boolean, default=False)
     music_id = Column(UUID(as_uuid=True), ForeignKey('music_files.id'), nullable=True)
     status = Column(Enum(QueueStatus), default=QueueStatus.pending, index=True)
-    priority = Column(Integer, default=0)
     scheduled_time = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    content_platforms = relationship("ContentPlatform", back_populates="content", lazy="selectin")
+    content_platforms = relationship("ContentPlatform", back_populates="content", lazy="selectin", cascade="all, delete-orphan")
     user = relationship("User", backref="contents", lazy="selectin")
     music = relationship("MusicFile", backref="contents", lazy="selectin")
 

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Request, U
 from fastapi.responses import StreamingResponse
 import requests
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List
+from typing import List, Optional
 from uuid import UUID, uuid4
 from . import crud, schemas
 from .models import MusicFile
@@ -58,12 +58,22 @@ async def create_content(
             user_id=current_user.id,
         )
 
-        result.platforms_id = [p.id for p in result.platform]
+        result.user_name = current_user.username
+
+        result.platforms_status = [
+            {"platform_id": cp.platform_id, 
+             "platform_name": cp.platform.name,
+             "status": cp.status, 
+             "priority": cp.priority
+            }
+            for cp in result.content_platforms
+        ]
 
         return result
     except Exception as e:
-        print(f"Scraping error: {e}")
+        logger.error(f"Error creating content: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+
     
 @router.get("/", response_model=List[schemas.ContentOut])
 async def read_contents(
@@ -75,9 +85,15 @@ async def read_contents(
     contents = await crud.get_contents(db, current_user.id, skip, limit)
     for content in contents:
         content.platforms_status = [
-            {"platform_id": cp.platform_id, "status": cp.status}
+            {
+                "platform_id": cp.platform_id,
+                "platform_name": cp.platform.platform.value if cp.platform else None,
+                "status": cp.status,
+                "priority": cp.priority
+            }
             for cp in content.content_platforms
         ]
+        content.user_name = content.user.username if content.user else None
     return contents
 
 
@@ -92,9 +108,16 @@ async def read_content(
         raise HTTPException(status_code=404, detail="Content not found")
 
     content.platforms_status = [
-        {"platform_id": cp.platform_id, "status": cp.status}
+        {
+            "platform_id": cp.platform_id,
+            "platform_name": cp.platform.platform.value if cp.platform else None,
+            "status": cp.status,
+            "priority": cp.priority
+        }
         for cp in content.content_platforms
     ]
+
+    content.user_name = content.user.username if content.user else None
 
     return content
 
@@ -102,14 +125,26 @@ async def read_content(
 @router.put("/{content_id}", response_model=schemas.ContentOut)
 async def update_content(
     content_id: UUID,
-    content: schemas.ContentBase,
+    content: schemas.ContentUpdate,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     updated_content = await crud.update_content(db, content_id, current_user.id, content)
     if not updated_content:
         raise HTTPException(status_code=404, detail="Content not found")
-    updated_content.platforms_id = [p.id for p in updated_content.platform]
+    
+    updated_content.platforms_status = [
+        {
+            "platform_id": cp.platform_id,
+            "platform_name": cp.platform.platform.value if cp.platform else None,
+            "status": cp.status,
+            "priority": cp.priority
+        }
+        for cp in updated_content.content_platforms
+    ]
+
+    updated_content.user_name = updated_content.user.username if updated_content.user else None
+
     return updated_content
 
 
@@ -123,6 +158,33 @@ async def delete_content(
     if not success:
         raise HTTPException(status_code=404, detail="Content not found")
     return {"detail": "Content deleted successfully"}
+
+
+@router.get("/platform/filtered", response_model=List[schemas.ContentOut])
+async def get_filtered_contents(
+    platform_name: Optional[str] = None,
+    platform_username: Optional[str] = None,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+    skip: int = 0,
+    limit: int = 30,
+):
+    contents = await crud.get_filtered_contents(
+        db,
+        user_id=current_user.id,
+        platform_name=platform_name,
+        platform_username=platform_username,
+        skip=skip,
+        limit=limit
+    )
+
+    for content in contents:
+        content.platforms_status = [
+            {"platform_id": cp.platform_id, "status": cp.status, "priority": cp.priority}
+            for cp in content.content_platforms
+        ]
+
+    return contents
 
 
 @router.post("/upload-music/")
@@ -177,24 +239,18 @@ async def delete_music(
 
 @router.get("/status/progress")
 async def get_current_video_progress():
-    print(f"get_current_video_progress: OK")
-    
     progress = redis_client.get("current_video_progress")
-    print(f"current_video_progress: {progress}")
 
     if progress is None:
-        logger.warning("Progress key not found in Redis.")
         return {"progress": "No task running"}
 
-    progress = progress.decode()
+    progress = progress.decode().strip()
 
     try:
-        progress_value = int(progress)
-        return {"progress": progress_value}
+        return {"progress": int(progress)}
     except ValueError:
-        # Handling special states like "no_pending", "failed", etc.
         if progress in ["no_pending", "failed"]:
             return {"progress": progress}
-        
-        logger.error(f"Unexpected progress value: {progress}")
-        raise HTTPException(status_code=500, detail="Invalid progress value")
+
+        logger.error(f"Unexpected progress value from Redis: '{progress}'")
+        return {"progress": "unknown", "detail": f"Unexpected value '{progress}'"}

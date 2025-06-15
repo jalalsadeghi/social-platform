@@ -61,9 +61,10 @@ export const ContentTable = () => {
   const { platformsQuery } = usePlatform();
   const platforms = platformsQuery.data?.pages.flat() || [];
 
-  const getPlatformNameById = (id: string) => {
-    const platform = platforms.find(p => p.id === id);
-    return platform ? platform.platform+" ("+platform.username+")" : "Unknown";
+  const getPlatformNameById = (ps: PlatformStatus) => {
+    if (ps.platform_name) return ps.platform_name;
+    const platform = platforms.find(p => p.id === ps.platform_id);
+    return platform ? `${platform.platform} (${platform.username})` : "Unknown";
   };
 
   const contents = contentsQuery.data || [];
@@ -164,7 +165,7 @@ export const ContentTable = () => {
                   <TableRow key={ps.platform_id}>
                     <TableCell></TableCell>
                     <TableCell colSpan={2} className="pl-20 text-sm text-gray-600">
-                      {getPlatformNameById(ps.platform_id)}
+                      {getPlatformNameById(ps)}
                     </TableCell>
                     <TableCell colSpan={2} className=" text-sm text-gray-600">
                       <span className="capitalize font-semibold">{ps.status}</span>

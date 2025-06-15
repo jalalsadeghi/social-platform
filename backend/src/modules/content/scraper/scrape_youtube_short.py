@@ -375,8 +375,7 @@ async def extract_ai_caption(
         }
     ]
 
-    total_words = video_duration * word_per_second
-    max_tokens = int(total_words / 0.75)
+    max_tokens = int(max_words_allowed / 0.75)
 
     ai_caption = await generate_ai_content(messages_caption, openai_model, max_tokens)
 

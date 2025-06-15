@@ -17,7 +17,9 @@ export interface ContentScraperResponse {
 
 export interface ContentPlatformStatus {
   platform_id: string;
+  platform_name?: string; 
   status: string; 
+  priority: number;
 }
 
 export interface ContentCreate {
@@ -37,17 +39,16 @@ export interface ContentUpdate extends Partial<ContentCreate> {}
 export interface Content {
   id: string;
   user_id: string;
+  user_name?: string;
   ai_title: string;
   ai_caption: string;
   ai_content: string;
-  platforms_id: string[];
   content_url: string;
   video_filename: string;
   thumb_filename: string;
   remove_audio: boolean;
   music_id?: string | null;
   status: string;
-  priority: number;
   platforms_status: ContentPlatformStatus[];
   scheduled_time?: string;
   created_at: string;
@@ -69,8 +70,14 @@ export const scrapeContent = async (data: ContentScraperRequest): Promise<Conten
 
 // Create new content
 export const createContent = async (data: ContentCreate): Promise<Content> => {
-  const response = await api.post("/contents/", data);
-  return response.data;
+  try {
+    const response = await api.post("/contents/", data);
+    console.log("CreateContent response:", response.data); // برای بررسی پاسخ دقیق سرور
+    return response.data;
+  } catch (error) {
+    console.error("CreateContent error detail:", error);
+    throw error;
+  }
 };
 
 // Fetch contents (list with pagination)

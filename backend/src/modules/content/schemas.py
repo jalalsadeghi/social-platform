@@ -20,7 +20,9 @@ class ContentScrapedOut(BaseModel):
 
 class ContentPlatformStatus(BaseModel):
     platform_id: UUID
+    platform_name: Optional[str]
     status: PostStatus
+    priority: int
 
     class Config:
         from_attributes = True
@@ -37,13 +39,17 @@ class ContentBase(BaseModel):
 
 class ContentCreate(ContentBase):
     platforms_id: List[UUID]
+    priority_zero: Optional[bool] = False
+
+class ContentUpdate(ContentBase):
+    platforms_id: List[UUID]
 
 class ContentOut(ContentBase):
     id: UUID
     user_id: UUID
+    user_name: Optional[str] 
     platforms_status: List[ContentPlatformStatus]
     status: QueueStatus
-    priority: int
     scheduled_time: Optional[datetime]
     created_at: datetime
     updated_at: datetime

@@ -34,11 +34,15 @@ export const useContent = () => {
   // Create Mutation
   const createMutation = useMutation({
     mutationFn: (data: ContentCreate) => createContent(data),
-    onSuccess: () => {
+    onSuccess: (data) => { // داده‌های پاسخ را می‌توانید لاگ کنید و مطمئن شوید کامل است
+      console.log("Mutation success data:", data);
       queryClient.invalidateQueries({ queryKey: ["contents"] });
       toast.success("Content created successfully.");
     },
-    onError: () => toast.error("Failed to create content."),
+    onError: (error) => {
+      console.error("Create content mutation error:", error);
+      toast.error("Failed to create content.");
+    },
   });
 
   // Update Mutation

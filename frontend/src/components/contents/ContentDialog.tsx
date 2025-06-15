@@ -39,7 +39,7 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
   const [tip, setTip] = useState("");
   const [removeAudio, setRemoveAudio] = useState<boolean>(initialData?.remove_audio ?? false);
   const [selectedMusicId, setSelectedMusicId] = useState<string | null>(initialData?.music_id || null);
-
+  const [priorityZero, setPriorityZero] = useState<boolean>(false);
 
   const [scrapedData, setScrapedData] = useState({
     ai_title: initialData?.ai_title || "",
@@ -101,6 +101,7 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
       thumb_filename: finalThumb,
       remove_audio: removeAudio,
       music_id: selectedMusicId,
+      priority_zero: priorityZero,
     };
 
     if (initialData?.id) {
@@ -183,6 +184,17 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
                 </div>
               ))}
             </div>
+
+            {!initialData && (
+            <div className="flex items-center space-x-2 mt-4">
+              <Checkbox
+                id="priority-zero"
+                checked={priorityZero}
+                onCheckedChange={(checked) => setPriorityZero(!!checked)}
+              />
+              <Label htmlFor="priority-zero">Set Priority of Platforms to Zero</Label>
+            </div>
+            )}
 
             {/* <div className="mt-4"> */}
             <div className="flex items-center space-x-2">

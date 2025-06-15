@@ -3,19 +3,23 @@ from playwright.async_api import Page, BrowserContext
 from ..utils.common import get_headers, random_delay
 from .secure_credentials import get_cookies, store_cookies
 import random
+import json
 
-async def login_instagram(db, page: Page, context: BrowserContext, user_id, username, password):
+async def login_instagram(db, page: Page, context: BrowserContext, user_id, username, password, cookies):
     existing_cookies = await get_cookies(db, user_id, "instagram")
 
     try:
         # if there are existing cookies, try to use them first
-        if existing_cookies:
-            await context.add_cookies(existing_cookies)
+        if cookies:
+            if isinstance(cookies, str):
+                cookies = json.loads(cookies)
+                
+            await context.add_cookies(cookies)
             await page.goto("https://www.instagram.com/", timeout=60000)
             await random_delay(5, 8)
             if await page.query_selector('nav'):
                 # Login with cookies was successful
-                return {"success": True, "cookies": existing_cookies}
+                return {"success": True, "cookies": cookies}
             else:
                 print("Stored cookies invalid or expired, attempting fresh login.")
 
