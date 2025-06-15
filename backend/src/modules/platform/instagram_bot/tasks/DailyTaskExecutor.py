@@ -66,24 +66,10 @@ async def generate_instagram_posting(content_id: UUID, user_id: UUID, platform_i
 
             print("Logged in successfully.")
 
-#             tasks = (["post"] * post_count) + (["comment"] * comment_count) + (["like"] * like_count)
-#             random.shuffle(tasks)
+            post_content = await post_to_instagram(db, user_id, page, content_id)
+            # print("Post executed", task)
 
-#             for task in tasks:
-#                 if task == "post":
-#                     await post_to_instagram(db, user_id, page)
-#                     print("Post executed", task)
+            await browser.close()
 
-#                 elif task == "comment":
-#                     await comment_to_instagram(page)
-#                     print("Comment executed", task)
 
-#                 elif task == "like":
-#                     await like_to_instagram(page)
-#                     print("Like executed", task)
-
-#                 await random_delay(2, 10)
-
-#             await browser.close()
-
-#         print("All daily tasks executed successfully.")
+    return post_content

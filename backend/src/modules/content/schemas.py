@@ -35,6 +35,7 @@ class ContentBase(BaseModel):
     video_filename: str
     thumb_filename: str
     remove_audio: Optional[bool] = False
+    no_ai_audio: Optional[bool] = False
     music_id: Optional[UUID] = None
 
 class ContentCreate(ContentBase):

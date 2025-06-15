@@ -74,7 +74,10 @@ def generate_reels_task(self):
 
         final_reels_filename = asyncio.run(generate_instagram_posting(content_id, user_id, platform_id))
 
-        pending.status = PostStatus.posted
+        if final_reels_filename:
+            pending.status = PostStatus.posted
+        else: 
+            pending.status = PostStatus.failed
         session.commit()
 
         redis_client.set("🔄 current_reels_progress", 100)

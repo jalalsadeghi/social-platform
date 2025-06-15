@@ -1,5 +1,5 @@
 # backend/src/modules/platform/routers.py
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional
 from typing import List
@@ -75,4 +75,4 @@ async def delete_platform(
     success = await crud.delete_platform(db, platform_id, user_id=current_user.id)
     if not success:
         raise HTTPException(status_code=404, detail="Platform not found or Unauthorized")
-    return {"detail": "Platform deleted successfully"}
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

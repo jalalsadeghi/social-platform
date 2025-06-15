@@ -1,28 +1,17 @@
 # backend/src/modules/platform/instagram_bot/services/instagram_post.py
 from ..utils.common import random_delay, safe_click, screenshot #mouse_move_click
-from modules.product.crud import get_scheduled_products, update_product_status
-from modules.product.models import QueueStatusProduct
 from sqlalchemy.ext.asyncio import AsyncSession
+from modules.content.crud import get_content_by_id
 from playwright.async_api import async_playwright
 import random
 import time
 
-async def post_to_instagram(db, user_id, page):
+async def post_to_instagram(db, user_id, page, content_id):
 
-    scheduled_products = await get_scheduled_products(db, user_id, limit=1)
+    content = await get_content_by_id(db, content_id, user_id)
 
-    if not scheduled_products:
-        print("No scheduled products to post.")
-        return
-
-    product = scheduled_products[0]
-
-    # Update product status to processing
-    await update_product_status(db, product.id, user_id, QueueStatusProduct.processing)
-
-    video_file = [media.media_url for media in product.media]
-    thumbnail_file = [media.local_path for media in product.media]
-    media = video_file
+    thumbnail_file = content.thumb_filename
+    media = content.video_filename
 
     steps = [
         ('svg[aria-label="New post"]', "Create"),
@@ -69,7 +58,7 @@ async def post_to_instagram(db, user_id, page):
         
         if name == "Content_Box":
             # Type content (بعد از اطمینان از کلیک قبلی)
-            ai_content = product.ai_content
+            ai_content = content.ai_content
             await page.keyboard.type(ai_content, delay=random.randint(50, 150))
             await random_delay(2, 5)
             await screenshot(page, "210_Content_Box")
@@ -108,9 +97,7 @@ async def post_to_instagram(db, user_id, page):
         # بررسی پیام خطا
         await page.wait_for_selector(error_popup_selector, state='visible', timeout=5000)
         print("⚠️ Error popup detected. Closing popup.")
-        #Update product status to posted after successful upload
-        await update_product_status(db, product.id, user_id, QueueStatusProduct.ready)
-
+        
         clicked = await safe_click(page, close_button_selector, "220_wrong")
 
         if not clicked:
@@ -122,12 +109,10 @@ async def post_to_instagram(db, user_id, page):
         await random_delay(1, 3)
         print("🎉 Post shared successfully.")
 
-        #Update product status to posted after successful upload
-        await update_product_status(db, product.id, user_id, QueueStatusProduct.posted)
-
         await screenshot(page, "220_successfully")
 
     await screenshot(page, "221_Final", "error")
 
     await page.goto("https://www.instagram.com/ki.blick/")
-    
+
+    return True

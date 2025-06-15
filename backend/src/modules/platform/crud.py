@@ -117,24 +117,22 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
 
     update_data = data.dict(exclude_unset=True)
 
-    # حتماً چک کنید اگر پسورد ارسال شده آن را آپدیت کنید
     if 'password' in update_data and update_data['password']:
         credentials['password'] = encrypt(update_data['password'])
 
-    # آپدیت بقیه فیلدها
-    cookie_list = parse_netscape_cookies(update_data['cookies'])
     if 'cookies' in update_data:
+        cookies_str = json.loads(update_data['cookies'])
+        cookie_list = parse_netscape_cookies(cookies_str)
         db_platform.cookies = cookie_list
 
     if 'platform' in update_data:
         db_platform.platform = update_data['platform']
 
-    db_platform.credentials = credentials  # حتماً این خط را بنویسید تا credentials آپدیت شود.
+    db_platform.credentials = credentials
 
     await db.commit()
     await db.refresh(db_platform)
 
-    # رمزگشایی برای پاسخ نهایی
     response_data = {
         "id": db_platform.id,
         "user_id": db_platform.user_id,
@@ -142,12 +140,13 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
         "account_identifier": db_platform.account_identifier,
         "username": decrypt(credentials.get('username', '')),
         "password": decrypt(credentials.get('password', '')),
-        "cookies": db_platform.cookies,
+        "cookies": json.dumps(db_platform.cookies),
         "created_at": db_platform.created_at,
         "updated_at": db_platform.updated_at
     }
 
     return response_data
+
 
 
 async def delete_platform(db: AsyncSession, platform_id: UUID, user_id: UUID):

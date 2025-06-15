@@ -46,6 +46,7 @@ class Content(Base):
     video_filename = Column(String, nullable=False)
     thumb_filename = Column(String, nullable=True)
     remove_audio = Column(Boolean, default=False)
+    no_ai_audio = Column(Boolean, default=False)
     music_id = Column(UUID(as_uuid=True), ForeignKey('music_files.id'), nullable=True)
     status = Column(Enum(QueueStatus), default=QueueStatus.pending, index=True)
     scheduled_time = Column(DateTime(timezone=True), nullable=True)

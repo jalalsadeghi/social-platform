@@ -38,6 +38,7 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
   const [url, setUrl] = useState(initialData?.content_url || "");
   const [tip, setTip] = useState("");
   const [removeAudio, setRemoveAudio] = useState<boolean>(initialData?.remove_audio ?? false);
+  const [noAiAudio, setNoAiAudio] = useState<boolean>(initialData?.no_ai_audio ?? false);
   const [selectedMusicId, setSelectedMusicId] = useState<string | null>(initialData?.music_id || null);
   const [priorityZero, setPriorityZero] = useState<boolean>(false);
 
@@ -100,6 +101,7 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
       video_filename: scrapedData.video_filename,
       thumb_filename: finalThumb,
       remove_audio: removeAudio,
+      no_ai_audio: noAiAudio,
       music_id: selectedMusicId,
       priority_zero: priorityZero,
     };
@@ -204,6 +206,15 @@ export const ContentDialog: React.FC<Props> = ({ open, onClose, initialData }) =
                 onCheckedChange={(checked) => setRemoveAudio(!!checked)}
               />
               <Label htmlFor="remove-audio">Remove Audio from Video</Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="no-ai-audio"
+                checked={noAiAudio}
+                onCheckedChange={(checked) => setNoAiAudio(!!checked)}
+              />
+              <Label htmlFor="no-ai-audio">No AI Audio from Video</Label>
             </div>
 
             <div className="mt-4">

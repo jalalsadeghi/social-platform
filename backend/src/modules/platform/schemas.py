@@ -19,9 +19,13 @@ class PlatformUpdate(BaseModel):
     platform: Optional[SocialPlatform] = None
     cookies: Optional[str] = None
 
-class PlatformOut(PlatformBase):
+class PlatformOut(BaseModel):
     id: UUID
     user_id: UUID
+    platform: SocialPlatform
+    username: str
+    password: str
+    cookies: Optional[str]
     created_at: datetime
     updated_at: datetime
 

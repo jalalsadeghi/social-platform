@@ -62,7 +62,7 @@ async def create_content(
 
         result.platforms_status = [
             {"platform_id": cp.platform_id, 
-             "platform_name": cp.platform.name,
+             "platform_name": cp.platform.platform.value,
              "status": cp.status, 
              "priority": cp.priority
             }

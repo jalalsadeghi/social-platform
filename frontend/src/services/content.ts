@@ -31,6 +31,7 @@ export interface ContentCreate {
   video_filename: string;
   thumb_filename: string;
   remove_audio?: boolean;
+  no_ai_audio?: boolean;
   music_id?: string | null;
 }
 
@@ -47,6 +48,7 @@ export interface Content {
   video_filename: string;
   thumb_filename: string;
   remove_audio: boolean;
+  no_ai_audio: boolean;
   music_id?: string | null;
   status: string;
   platforms_status: ContentPlatformStatus[];

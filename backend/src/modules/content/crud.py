@@ -22,6 +22,7 @@ async def create_content(db: AsyncSession, content: ContentCreate, user_id: UUID
         video_filename=content.video_filename,
         thumb_filename=content.thumb_filename,
         remove_audio=content.remove_audio,
+        no_ai_audio=content.no_ai_audio,
         music_id=content.music_id,
         status=QueueStatus.pending,
         scheduled_time=datetime.utcnow(),
