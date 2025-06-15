@@ -39,8 +39,13 @@ def generate_video_task(self):
             logging.info(f"A video is already processing: {processing.id}")
             return {"status": "skipped", "message": "A video is already processing"}
 
+        from sqlalchemy.orm import joinedload
+
         pending = session.execute(
-            select(Content).where(Content.status == QueueStatus.pending).order_by(Content.created_at.asc())
+            select(Content)
+            .options(joinedload(Content.music))
+            .where(Content.status == QueueStatus.pending)
+            .order_by(Content.created_at.asc())
         ).scalars().first()
 
         if not pending:
@@ -56,8 +61,12 @@ def generate_video_task(self):
         logging.info(f"Video status updated to processing: {pending.id}")
 
         final_video_filename = asyncio.run(generate_audio_and_video(
-            pending.ai_caption, 
-            pending.video_filename))
+            ai_caption=pending.ai_caption,
+            video_filename=pending.video_filename,
+            remove_audio=pending.remove_audio,
+            no_ai_audio=pending.no_ai_audio,
+            music_filename=pending.music.filename if pending.music else None,
+        ))
 
         pending.status = QueueStatus.ready
         pending.video_filename = final_video_filename
