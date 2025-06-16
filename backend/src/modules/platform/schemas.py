@@ -1,14 +1,15 @@
-# backend/src/modules/platform/schemas.py
-from pydantic import BaseModel, EmailStr, UUID4
+from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional
-from .models import SocialPlatform
+from typing import Optional, List, Dict
+from .models import SocialPlatform, Language
 from uuid import UUID
 
 class PlatformBase(BaseModel):
     username: str
     password: str
     platform: SocialPlatform
+    language: Language
+    posts_per_day: int
     cookies: Optional[str]
 
 class PlatformCreate(PlatformBase):
@@ -17,6 +18,8 @@ class PlatformCreate(PlatformBase):
 class PlatformUpdate(BaseModel):
     password: Optional[str] = None
     platform: Optional[SocialPlatform] = None
+    language: Optional[Language] = None
+    posts_per_day: Optional[int] = None
     cookies: Optional[str] = None
 
 class PlatformOut(BaseModel):
@@ -24,7 +27,9 @@ class PlatformOut(BaseModel):
     user_id: UUID
     platform: SocialPlatform
     username: str
-    password: str
+    language: Language
+    posts_per_day: int
+    schedule: Dict[str, Dict[str, str]] 
     cookies: Optional[str]
     created_at: datetime
     updated_at: datetime

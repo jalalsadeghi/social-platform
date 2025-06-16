@@ -28,6 +28,7 @@ class ContentPlatform(Base):
     platform_id = Column(UUID(as_uuid=True), ForeignKey('platforms.id', ondelete='CASCADE'), nullable=False, index=True)
     status = Column(Enum(PostStatus), default=PostStatus.pending, nullable=False)
     priority = Column(Integer, default=0, index=True)
+    url = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 

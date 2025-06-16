@@ -36,6 +36,7 @@ async def create_content(db: AsyncSession, content: ContentCreate, user_id: UUID
             priority = 0
         else:
             priority = await get_max_priority(db, user_id, platform.id) + 1
+            
         content_platform = ContentPlatform(
             content_id=db_content.id,
             platform_id=platform.id,

@@ -10,9 +10,9 @@ from uuid import UUID
 
 router = APIRouter(prefix="/platforms", tags=["platforms"])
 
-@router.post("/")
+@router.post("/", response_model=schemas.PlatformOut)
 async def create_platform(
-    credentials: schemas.PlatformBase,
+    credentials: schemas.PlatformCreate,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -24,13 +24,16 @@ async def create_platform(
             identifier=credentials.username,
             credentials={"username": credentials.username, "password": credentials.password},
             cookies=credentials.cookies,
+            language=credentials.language,
+            posts_per_day=credentials.posts_per_day,
             is_oauth=False
         )
-        return {"message": "Credentials stored successfully"}
+        
+        new_platform = await crud.get_platform_by_identifier(db, current_user.id, credentials.username)
+        return new_platform
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-    
+
 @router.get("/", response_model=List[schemas.PlatformOut])
 async def get_platforms(
     current_user=Depends(get_current_user),
@@ -64,6 +67,7 @@ async def update_platform(
     if not updated_platform:
         raise HTTPException(status_code=404, detail="Platform not found")
     return updated_platform
+
 
 
 @router.delete("/{platform_id}", status_code=status.HTTP_204_NO_CONTENT)
