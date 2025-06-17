@@ -41,7 +41,8 @@ async def create_content(db: AsyncSession, content: ContentCreate, user_id: UUID
             content_id=db_content.id,
             platform_id=platform.id,
             status=PostStatus.pending,
-            priority=priority
+            priority=priority,
+            url=""
         )
         db.add(content_platform)
 
@@ -79,7 +80,8 @@ async def update_content(
             content_id=db_content.id,
             platform_id=platform_id,
             status=PostStatus.pending,
-            priority=priority
+            priority=priority,
+            url="",
         )
         db.add(db_content_platform)
 
@@ -99,7 +101,7 @@ async def get_max_priority(db: AsyncSession, user_id: UUID, platform_id: UUID) -
         .where(
             Content.user_id == user_id,
             ContentPlatform.platform_id == platform_id,
-            ContentPlatform.status == PostStatus.pending
+            ContentPlatform.status == PostStatus.ready
         )
     )
     max_priority = result.scalar()

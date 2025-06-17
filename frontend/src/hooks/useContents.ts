@@ -82,6 +82,7 @@ export const useContents = () => {
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length === 30 ? allPages.length * 30 : undefined,
+    refetchInterval: 5000,
   });
 };
 
@@ -109,3 +110,4 @@ export const useCurrentVideoProgress = () => {
     refetchInterval: 5000, // هر 5 ثانیه وضعیت به‌روز شود
   });
 };
+

@@ -105,6 +105,8 @@ export const PlatformTable = () => {
             username: selectedPlatform.username,
             password: selectedPlatform.password,
             credentials: selectedPlatform.credentials,
+            language: selectedPlatform.language,
+            posts_per_day: selectedPlatform.posts_per_day,
             cookies: selectedPlatform.cookies,
             is_oauth: selectedPlatform.is_oauth,
           }}

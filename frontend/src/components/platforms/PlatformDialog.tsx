@@ -18,6 +18,8 @@ interface Props {
   initialData?: {
     platform: "instagram" | "youtube" | "tiktok";
     username?: string;
+    language?: "English" | "German" | "Persian";
+    posts_per_day?: number;
     cookies?: string;
   };
   open: boolean;
@@ -31,6 +33,8 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
     platform: "instagram",
     username: "",
     password: "",
+    language: "English",
+    posts_per_day: 0,
     cookies: "",
   });
 
@@ -40,6 +44,8 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
         platform: initialData.platform,
         username: initialData.username || "",
         password: "",
+        language: initialData.language ?? "English",
+        posts_per_day: initialData.posts_per_day ?? 0,
         cookies: initialData.cookies || "",
       });
     }
@@ -50,6 +56,8 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
       platform: "instagram",
       username: "",
       password: "",
+      language: "",
+      posts_per_day: 0,
       cookies: "",
     });
   };
@@ -66,6 +74,8 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
         data: {
           platform: formData.platform,
           password: formData.password || undefined,
+          language: formData.language,
+          posts_per_day: formData.posts_per_day,
           cookies: formData.cookies,
         },
       });
@@ -113,6 +123,26 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
           placeholder={platformId ? "New Password (leave blank to keep current)" : "Password"}
         />
 
+        <Select
+          value={formData.language}
+          onValueChange={(value) => setFormData({ ...formData, language: value })}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Language" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="English">English</SelectItem>
+            <SelectItem value="German">German</SelectItem>
+            <SelectItem value="Persian">Persian</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Input
+          type="number"
+          value={formData.posts_per_day}
+          onChange={(e) => setFormData({ ...formData, posts_per_day: Number(e.target.value) })}
+          placeholder="Posts per day"
+        />
         <Textarea
           value={formData.cookies}
           onChange={(e) => setFormData({ ...formData, cookies: e.target.value })}

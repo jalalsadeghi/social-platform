@@ -5,9 +5,11 @@ export interface Platform {
   id: string;
   user_id: string;
   platform: "instagram" | "youtube" | "tiktok";
-  account_identifier: string;
-  credentials?: Record<string, any>;
-  cookies?: Record<string, any>;
+  username: string;
+  language: "English" | "German" | "Persian";
+  posts_per_day: number;
+  password?: string;
+  cookies?: string;
   is_oauth: boolean;
   created_at: string;
   updated_at: string;
@@ -17,8 +19,18 @@ export interface PlatformCreate {
   platform: "instagram" | "youtube" | "tiktok";
   username: string;
   password: string;
-  cookies?: Record<string, any>;
+  language: "English" | "German" | "Persian";
+  posts_per_day: number;
+  cookies?: string;
 }
+
+// export interface PlatformUpdate {
+//   platform?: "instagram" | "youtube" | "tiktok";
+//   password?: string;
+//   language?: "English" | "German" | "Persian";
+//   posts_per_day?: number;
+//   cookies?: string;
+// }
 
 export interface PlatformUpdate extends Partial<PlatformCreate> {}
 

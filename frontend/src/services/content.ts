@@ -20,6 +20,7 @@ export interface ContentPlatformStatus {
   platform_name?: string; 
   status: string; 
   priority: number;
+  url: string;
 }
 
 export interface ContentCreate {

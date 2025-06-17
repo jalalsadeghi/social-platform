@@ -7,13 +7,9 @@ from sqlalchemy.ext.asyncio import async_sessionmaker
 from core.database import engine
 from core.config import settings
 from modules.platform.instagram_bot.services.instagram_post import post_to_instagram
-from modules.platform.instagram_bot.services.instagram_comment import comment_to_instagram
-from modules.platform.instagram_bot.services.instagram_like import like_to_instagram
 from modules.platform.instagram_bot.services.instagram_client import login_instagram
 from modules.platform.crud import get_platform
-from modules.plan.crud import get_active_subscription
 from modules.platform.instagram_bot.utils.common import random_delay
-from modules.product.crud import get_scheduled_products
 from playwright.async_api import async_playwright
 import logging
 from uuid import UUID

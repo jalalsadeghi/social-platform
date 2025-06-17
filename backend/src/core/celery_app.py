@@ -13,8 +13,9 @@ celery_app = Celery(
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
-        # "modules.content.generate_video.task_generator_video",
-        # "modules.platform.instagram_bot.tasks.scheduler",
+        "modules.content.generate_video.task_generator_video",
+        "modules.platform.instagram_bot.tasks.scheduler",
+        "modules.platform.tasks.schedule_processor",
     ]
 )
 
@@ -29,14 +30,18 @@ celery_app.conf.update(
     beat_scheduler='celery.beat:PersistentScheduler',
     beat_schedule_filename='/tmp/celerybeat-schedule',
     beat_schedule={
-        # "video-generation-task": {
-        #     "task": "modules.content.generate_video.task_generator_video.generate_video_task",
-        #     "schedule": crontab(minute="*/1"),
-        # },
-        # "post-executor-task": {
-        #     "task": "modules.platform.instagram_bot.tasks.scheduler.generate_reels_task",
-        #     "schedule": crontab(minute="*/1"), 
-        # },
+        "video-generation-task": {
+            "task": "modules.content.generate_video.task_generator_video.generate_video_task",
+            "schedule": crontab(minute="*/1"),
+        },
+        "post-executor-task": {
+            "task": "modules.platform.instagram_bot.tasks.scheduler.generate_reels_task",
+            "schedule": crontab(minute="*/1"), 
+        },
+        "schedule-processor-task": {
+            "task": "modules.platform.tasks.schedule_processor.schedule_priority_shift_task",
+            "schedule": crontab(minute="*/1"), 
+        },
     }
 )
 
