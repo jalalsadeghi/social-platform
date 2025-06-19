@@ -19,4 +19,4 @@ from modules.payment.models import Payment
 from modules.logs.models import AppLog
 from modules.ai.models import AIPrompt
 from modules.platform.models import Platform
-from modules.content.models import Content, MusicFile
+from modules.content.models import Content, MusicFile, ContentPlatform

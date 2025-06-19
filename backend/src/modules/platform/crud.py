@@ -20,6 +20,7 @@ async def generate_schedule_with_ai(language: str, posts_per_day: int) -> dict:
         f"optimized specifically for an audience speaking {language}. "
         f"The schedule should exactly contain {posts_per_day} posts each day, distributed optimally based on "
         f"peak engagement times for regions where this language ({language}) is primarily spoken. "
+        f"All times must be provided in Greenwich Mean Time (GMT/UTC). "
         f"The JSON must strictly follow this structure without any additional text or explanation:\n\n"
         f"{{\n"
         f"    \"Mon\":{{\"send01\":\"HH:MM\", \"send02\":\"HH:MM\", ...}},\n"
@@ -30,7 +31,7 @@ async def generate_schedule_with_ai(language: str, posts_per_day: int) -> dict:
         f"    \"Sat\":{{\"send01\":\"HH:MM\", \"send02\":\"HH:MM\", ...}},\n"
         f"    \"Sun\":{{\"send01\":\"HH:MM\", \"send02\":\"HH:MM\", ...}}\n"
         f"}}\n\n"
-        f"Replace \"HH:MM\" with appropriate 24-hour format times. "
+        f"Replace \"HH:MM\" with appropriate 24-hour format times in GMT/UTC.. "
         f"Do NOT add any explanatory text or notes. Return ONLY the JSON."
     )
 

@@ -3,11 +3,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from sqlalchemy.future import select
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 from .models import Content, QueueStatus, MusicFile, ContentPlatform, PostStatus
 from modules.platform.models import Platform
 from datetime import datetime
 from typing import List, Optional
-from .schemas import ContentCreate, ContentBase
+from .schemas import ContentCreate, ContentBase, UpdatePriority
 
 async def create_content(db: AsyncSession, content: ContentCreate, user_id: UUID):
     platforms = await db.execute(select(Platform).where(Platform.id.in_(content.platforms_id)))
@@ -79,7 +80,6 @@ async def update_content(
         db_content_platform = ContentPlatform(
             content_id=db_content.id,
             platform_id=platform_id,
-            status=PostStatus.pending,
             priority=priority,
             url="",
         )
@@ -148,3 +148,64 @@ async def get_next_pending_video(session: AsyncSession) -> Optional[Content]:
         .order_by(Content.created_at.asc())
     )
     return result.scalars().first()
+
+
+async def get_contents_by_platform_id(db: AsyncSession, platform_id: UUID, skip=0, limit=30):
+    result = await db.execute(
+        select(ContentPlatform)
+        .options(joinedload(ContentPlatform.content))
+        .where(ContentPlatform.platform_id == platform_id)
+        .offset(skip)
+        .limit(limit)
+    )
+
+    content_platforms = result.scalars().all()
+
+    return [
+        {
+            "id": cp.id,
+            "content_id": cp.content_id,
+            "title": cp.content.ai_title,
+            "video_filename": cp.content.video_filename,
+            "thumb_filename": cp.content.thumb_filename,
+            "status": cp.status
+        }
+        for cp in content_platforms
+    ]
+
+
+async def delete_content_platform(
+    db: AsyncSession, content_platforms_id: UUID
+) -> bool:
+    result = await db.execute(
+        select(ContentPlatform)
+        .where(
+            ContentPlatform.id == content_platforms_id,
+        )
+    )
+    content_platform = result.scalars().first()
+
+    if not content_platform:
+        return False
+
+    await db.delete(content_platform)
+    await db.commit()
+    return True
+
+async def update_priorities(
+    db: AsyncSession, 
+    priorities: List[UpdatePriority]
+):
+    for item in priorities:
+        await db.execute(
+            select(ContentPlatform)
+            .filter(ContentPlatform.id == item.content_platform_id)
+            .execution_options(synchronize_session="fetch")
+        )
+
+        await db.execute(
+            ContentPlatform.__table__.update()
+            .where(ContentPlatform.id == item.content_platform_id)
+            .values(priority=item.priority)
+        )
+    await db.commit()

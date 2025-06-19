@@ -63,6 +63,7 @@ async def create_content(
         result.platforms_status = [
             {"platform_id": cp.platform_id, 
              "platform_name": cp.platform.platform.value,
+             "account_identifier": cp.platform.account_identifier,
              "status": cp.status, 
              "priority": cp.priority,
              "url": ""
@@ -89,6 +90,7 @@ async def read_contents(
             {
                 "platform_id": cp.platform_id,
                 "platform_name": cp.platform.platform.value if cp.platform else None,
+                "account_identifier": cp.platform.account_identifier if cp.platform else None,
                 "status": cp.status,
                 "priority": cp.priority
             }
@@ -112,6 +114,7 @@ async def read_content(
         {
             "platform_id": cp.platform_id,
             "platform_name": cp.platform.platform.value if cp.platform else None,
+            "account_identifier": cp.platform.account_identifier if cp.platform else None,
             "status": cp.status,
             "priority": cp.priority
         }
@@ -130,24 +133,43 @@ async def update_content(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    updated_content = await crud.update_content(db, content_id, current_user.id, content)
-    if not updated_content:
-        raise HTTPException(status_code=404, detail="Content not found")
     
-    updated_content.platforms_status = [
+    # updated_content = await crud.update_content(db, content_id, current_user.id, content)
+    # if not updated_content:
+    #     raise HTTPException(status_code=404, detail="Content not found")
+    
+    # updated_content.platforms_status = [
+    #     {
+    #         "platform_id": cp.platform_id,
+    #         "platform_name": cp.platform.platform.value if cp.platform else None,
+    #         "account_identifier": cp.platform.account_identifier if cp.platform else None,
+    #         "status": cp.status,
+    #         "priority": cp.priority
+    #     }
+    #     for cp in updated_content.content_platforms
+    # ]
+
+    # updated_content.user_name = updated_content.user.username if updated_content.user else None
+
+    # return updated_content
+    content = await crud.get_content_by_id(db, content_id, current_user.id)
+    if not content:
+        raise HTTPException(status_code=404, detail="Content not found")
+
+    content.platforms_status = [
         {
             "platform_id": cp.platform_id,
             "platform_name": cp.platform.platform.value if cp.platform else None,
+            "account_identifier": cp.platform.account_identifier if cp.platform else None,
             "status": cp.status,
             "priority": cp.priority
         }
-        for cp in updated_content.content_platforms
+        for cp in content.content_platforms
     ]
 
-    updated_content.user_name = updated_content.user.username if updated_content.user else None
+    content.user_name = content.user.username if content.user else None
 
-    return updated_content
-
+    return content
 
 @router.delete("/{content_id}", response_model=dict)
 async def delete_content(
@@ -186,6 +208,29 @@ async def get_filtered_contents(
         ]
 
     return contents
+
+@router.get("/platform/{platform_id}/contents", response_model=List[schemas.PlatformContentOut])
+async def get_platform_contents(
+    platform_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+    skip: int = 0,
+    limit: int = 30
+):
+    contents = await crud.get_contents_by_platform_id(db, platform_id, skip, limit)
+    return contents
+
+
+@router.delete("/content_platform/{content_platforms_id}", response_model=dict)
+async def delete_platform_content(
+    content_platforms_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    success = await crud.delete_content_platform(db, content_platforms_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="ContentPlatform record not found")
+    return {"detail": "ContentPlatform deleted successfully"}
 
 
 @router.post("/upload-music/")
@@ -250,8 +295,22 @@ async def get_current_video_progress():
     try:
         return {"progress": int(progress)}
     except ValueError:
-        if progress in ["no_pending", "failed"]:
+        if progress in ["no_pending", "failed", "ready"]:
             return {"progress": progress}
 
         logger.error(f"Unexpected progress value from Redis: '{progress}'")
         return {"progress": "unknown", "detail": f"Unexpected value '{progress}'"}
+    
+
+@router.put("/priority/update", response_model=dict)
+async def update_content_priorities(
+    priorities: schemas.UpdatePriorities,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        await crud.update_priorities(db, priorities.priorities)
+        return {"detail": "Priorities updated successfully"}
+    except Exception as e:
+        logger.error(f"Error updating priorities: {e}")
+        raise HTTPException(status_code=400, detail=str(e))

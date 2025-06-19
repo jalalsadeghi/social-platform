@@ -21,11 +21,19 @@ class ContentScrapedOut(BaseModel):
 class ContentPlatformStatus(BaseModel):
     platform_id: UUID
     platform_name: Optional[str]
-    status: PostStatus
+    account_identifier: Optional[str]
+    status: Optional[PostStatus]
     priority: int
 
     class Config:
         from_attributes = True
+
+class UpdatePriority(BaseModel):
+    content_platform_id: UUID
+    priority: int
+
+class UpdatePriorities(BaseModel):
+    priorities: List[UpdatePriority]
         
 class ContentBase(BaseModel):
     ai_title: str
@@ -54,6 +62,17 @@ class ContentOut(ContentBase):
     scheduled_time: Optional[datetime]
     created_at: datetime
     updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class PlatformContentOut(BaseModel):
+    id: UUID
+    content_id: UUID
+    title: str
+    video_filename: str
+    thumb_filename: Optional[str]
+    status: PostStatus
 
     class Config:
         from_attributes = True

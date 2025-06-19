@@ -11,6 +11,8 @@ import RolesPage from '@/pages/dashboard/RolesPage';
 import PlanPage from '@/pages/dashboard/PlanPage';
 import PromptPage from '@/pages/dashboard/PromptPage';
 import PlatformPage from '@/pages/dashboard/PlatformPage';
+import PlatformContentPage from '@/components/platforms/[platformId]/contents/page';
+
 
 function App() {
   return (
@@ -32,6 +34,7 @@ function App() {
           </Route>
           <Route element={<ProtectedRoute module="platform" action="read" />}>
             <Route path="/platforms" element={<PlatformPage />} />
+            <Route path="/contents/platform/:platformId/contents" element={<PlatformContentPage />} />
           </Route>
           <Route element={<ProtectedRoute module="role" action="read" />}>
             <Route path="/roles" element={<RolesPage />} />

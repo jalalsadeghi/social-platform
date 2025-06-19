@@ -1,3 +1,4 @@
+# src/modules/platform/tasks/schedule_processor.py
 from celery import shared_task
 from sqlalchemy.orm import Session
 from sqlalchemy import select, update
@@ -37,14 +38,18 @@ def schedule_priority_shift_task(self):
 
         for platform in platforms:
             schedule = platform.schedule.get(current_day, {})
-            for send_key, send_time in schedule.items():
+            
+            sorted_send_times = sorted(schedule.values())
+
+            for idx, send_time in enumerate(sorted_send_times):
                 operation_key = generate_operation_key(platform.id, current_day, send_time)
 
                 if redis_client.get(operation_key):
                     continue
 
-                if current_hour_minute <= send_time:
+                next_send_time = sorted_send_times[idx + 1] if idx + 1 < len(sorted_send_times) else None
 
+                if (current_hour_minute >= send_time) and (next_send_time is None or current_hour_minute < next_send_time):
                     session.execute(
                         update(ContentPlatform)
                         .where(
@@ -57,10 +62,9 @@ def schedule_priority_shift_task(self):
 
                     session.commit()
 
-                    redis_client.setex(operation_key, 86400, "completed") 
-                    print(f"Priority updated for platform_id {platform.id} at {send_time}.")
+                    redis_client.setex(operation_key, 86400, "completed")
                     logging.info(f"Priority updated for platform_id {platform.id} at {send_time}.")
-                    continue
+                    break
 
         logging.info("Priority shift task completed.")
 

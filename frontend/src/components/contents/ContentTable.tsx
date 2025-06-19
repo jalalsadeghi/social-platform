@@ -62,12 +62,12 @@ export const ContentTable = () => {
   const platforms = platformsQuery.data?.pages.flat() || [];
 
   const getPlatformNameById = (ps: PlatformStatus) => {
-    if (ps.platform_name) return ps.platform_name;
+    if (ps.platform_name) return ps.platform_name+" ("+ps.account_identifier+")";
     const platform = platforms.find(p => p.id === ps.platform_id);
     return platform ? `${platform.platform} (${platform.username})` : "Unknown";
   };
 
-  const contents = contentsQuery.data || [];
+  const contents = (contentsQuery.data || []).slice().sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   const baseURL = api.defaults.baseURL;
 
   const handleEditClick = (content: Content) => {

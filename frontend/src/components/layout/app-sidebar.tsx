@@ -1,7 +1,9 @@
 // src/components/layout/app-sidebar.tsx
-"use client"
-import * as React from "react"
+"use client";
+
+import React from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { usePlatform } from "@/hooks/usePlatform";
 import {
   AirVentIcon,
   BookAIcon,
@@ -12,11 +14,11 @@ import {
   TableOfContentsIcon,
   UnplugIcon,
   UserCog,
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavMain } from "@/components/layout/nav-main"
-import { NavSecondary } from "@/components/layout/nav-secondary"
-import { NavUser } from "@/components/layout/nav-user"
+import { NavMain } from "@/components/layout/nav-main";
+import { NavSecondary } from "@/components/layout/nav-secondary";
+import { NavUser } from "@/components/layout/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -26,7 +28,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarGroup,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
 
 const data = {
   user: {
@@ -46,37 +48,42 @@ const data = {
       icon: Send,
     },
   ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuth();
+  const { platformsQuery } = usePlatform();
+  const platforms = platformsQuery.data?.pages.flat() || [];
 
   const navMain = [
-    { 
-      title: "Products", 
-      url: "/products", 
-      icon: TableOfContentsIcon 
-    },
-    { 
-      title: "Contents", 
-      url: "/contents", 
+    {
+      title: "Products",
+      url: "/products",
       icon: TableOfContentsIcon,
-       
     },
-    { 
-      title: "Prompts", 
-      url: "/prompts", 
-      icon: BookAIcon 
+    {
+      title: "Contents",
+      url: "/contents",
+      icon: TableOfContentsIcon,
     },
-    { 
-      title: "Platform", 
-      url: "/platforms", 
-      icon: UnplugIcon 
+    {
+      title: "Prompts",
+      url: "/prompts",
+      icon: BookAIcon,
     },
-    { 
-      title: "Ask AI", 
-      url: "#", 
-      icon: Sparkles 
+    {
+      title: "Platform",
+      url: "/platforms",
+      icon: UnplugIcon,
+      children: platforms.map((platform) => ({
+        title: platform.username,
+        url: `/contents/platform/${platform.id}/contents?skip=0&limit=30`,
+      })),
+    },
+    {
+      title: "Ask AI",
+      url: "#",
+      icon: Sparkles,
     },
   ];
 
@@ -86,7 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   if (user?.role.permissions.plan?.read) {
     navMain.push({ title: "Plans", url: "/plans", icon: Command });
   }
-  
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -118,5 +125,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

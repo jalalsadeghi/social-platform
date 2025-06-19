@@ -18,6 +18,7 @@ export interface ContentScraperResponse {
 export interface ContentPlatformStatus {
   platform_id: string;
   platform_name?: string; 
+  account_identifier?: string;
   status: string; 
   priority: number;
   url: string;
