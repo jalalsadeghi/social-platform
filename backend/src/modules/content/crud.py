@@ -54,7 +54,10 @@ async def create_content(db: AsyncSession, content: ContentCreate, user_id: UUID
 
 async def get_contents(db: AsyncSession, user_id: UUID, skip=0, limit=30) -> List[Content]:
     result = await db.execute(
-        select(Content).where(Content.user_id == user_id).offset(skip).limit(limit)
+        select(Content)
+            .where(Content.user_id == user_id)
+            .order_by(Content.created_at.desc())
+            .offset(skip).limit(limit)
     )
     return result.scalars().all()
 

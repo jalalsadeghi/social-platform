@@ -1,24 +1,12 @@
-# src/modules/content/generate_video/generate_video.py
 import os
-import yt_dlp
-import requests
-import cv2
-import base64
-from PIL import Image
-from io import BytesIO
 import re
-import json
 import redis
 from pydub import AudioSegment
-from uuid import uuid4
+from io import BytesIO
 from openai import OpenAI
 from core.config import settings
-# from moviepy.video.io.VideoFileClip import VideoFileClip
-# from moviepy.audio.io.AudioFileClip import AudioFileClip
-# from moviepy.audio.AudioClip import CompositeAudioClip
-# from moviepy.video.VideoClip import TextClip
-# from moviepy.video.compositing.CompositeVideoClip import CompositeVideoClip
 from moviepy import AudioFileClip, VideoFileClip, CompositeAudioClip, TextClip, CompositeVideoClip
+
 
 from proglog import ProgressBarLogger
 import logging
@@ -33,33 +21,32 @@ if not os.path.exists(UPLOAD_DIRECTORY):
     os.makedirs(UPLOAD_DIRECTORY)
 
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
-openai_model = settings.OPENAI_MODEL
 
-def generate_audio_and_video(
-            ai_caption: str, 
-            video_filename: str,
-            remove_audio: bool,
-            no_ai_audio: bool,
-            music_filename: str,):
+def generate_audio_and_video_sync(
+        ai_caption: str,
+        video_filename: str,
+        remove_audio: bool,
+        no_ai_audio: bool,
+        music_filename: str):
     
     random_name = video_filename.split('/')[1].split('_')[0]
 
     audio_filename = ""
     if not no_ai_audio:
-        audio_filename = generate_audio(ai_caption, random_name)
+        audio_filename = generate_audio_sync(ai_caption, random_name)
 
-    final_video_filename = generate_video(
-                                            audio_filename = audio_filename, 
-                                            video_filename = video_filename, 
-                                            remove_audio = remove_audio,
-                                            music_filename = music_filename,
-                                            random_name = random_name, 
-                                        )
+    final_video_filename = generate_video_sync(
+        audio_filename=audio_filename,
+        video_filename=video_filename,
+        remove_audio=remove_audio,
+        music_filename=music_filename,
+        random_name=random_name,
+    )
 
     return final_video_filename
 
 
-def generate_audio(ai_caption: str, random_name):
+def generate_audio_sync(ai_caption: str, random_name):
     sections = re.split(r'\[P ([\d.]+) S\]', ai_caption)
 
     final_audio = AudioSegment.empty()
@@ -79,7 +66,7 @@ def generate_audio(ai_caption: str, random_name):
         if i + 1 < len(sections):
             pause_duration = float(sections[i + 1]) * 1000
             final_audio += AudioSegment.silent(duration=pause_duration)
-            
+
     audio_filename = f"{UPLOAD_DIRECTORY}/{random_name}.wav"
     final_audio.export(audio_filename, format="wav")
 
@@ -96,12 +83,8 @@ class MyProgressLogger(ProgressBarLogger):
                 logging.info(f"🔄 Rendering video: {percent}%")
         super().bars_callback(bar, attr, value, old_value)
 
-    def callback(self, **changes):
-        
-        super().callback(**changes)
 
-
-async def generate_video(
+def generate_video_sync(
         audio_filename: str, 
         video_filename: str, 
         remove_audio: bool,
@@ -174,60 +157,3 @@ async def generate_video(
     )
 
     return final_video_filename
-
-
-
-# async def generate_video(
-#                             audio_filename: str, 
-#                             video_filename: str, 
-#                             remove_audio: bool,
-#                             music_filename: str,
-#                             random_name: str,
-#                         ):
-    
-#     ai_audio_clip = AudioFileClip(audio_filename)
-#     video_clip = VideoFileClip(video_filename)
-#     video_duration = video_clip.duration
-
-#     font_path = 'src/core/assets/ARIALBD.TTF'
-#     watermark_text =  "KI-Blick" #f"@{uploader}"
-#     watermark_clip = TextClip(
-#         text=watermark_text,
-#         font_size=24,
-#         color='white',
-#         font=font_path,
-#         duration=video_duration 
-#     )
-
-#     position = (5, 5)
-
-#     watermark_clip = watermark_clip.with_position(position)
-
-#     video_mark = CompositeVideoClip([video_clip, watermark_clip])
-
-#     original_audio = video_clip.audio.with_volume_scaled(0.05)
-#     final_audio = CompositeAudioClip([original_audio, ai_audio_clip])
-
-#     final_video = video_mark.with_audio(final_audio)
-
-#     final_video_filename = f"{UPLOAD_DIRECTORY}/{random_name}.mp4"
-
-#     logger = MyProgressLogger()
-#     final_video.write_videofile(
-#         final_video_filename,
-#         codec='libx264',
-#         audio_codec='aac',
-#         bitrate='5000k',            # افزایش بیت‌ریت (برای ویدئوهای FullHD و Shorts اینستاگرام مناسب است)
-#         preset='slow',              # تنظیم کیفیت و فشرده‌سازی (slow یا medium)
-#         threads=4,                  # استفاده بهینه از منابع CPU
-#         fps=video_clip.fps,         # حفظ fps اصلی ویدئو
-#         audio_bitrate='192k',       # افزایش کیفیت صدا
-#         ffmpeg_params=[
-#             "-vf", f"scale={video_clip.size[0]}:{video_clip.size[1]}"
-#         ],
-#         logger=logger,
-#     )
-
-    
-#     return final_video_filename
-    
