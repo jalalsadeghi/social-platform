@@ -21,6 +21,7 @@ interface Props {
     language?: "English" | "German" | "Persian";
     posts_per_day?: number;
     cookies?: string;
+    schedule?: Record<string, Record<string, string>>;
   };
   open: boolean;
   onClose: () => void;
@@ -37,6 +38,7 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
     posts_per_day: 0,
     cookies: "",
   });
+  const [schedule, setSchedule] = useState<string>("");
 
   useEffect(() => {
     if (initialData) {
@@ -48,6 +50,9 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
         posts_per_day: initialData.posts_per_day ?? 0,
         cookies: initialData.cookies || "",
       });
+      if (initialData.schedule) {
+        setSchedule(JSON.stringify(initialData.schedule, null, 2)); // JSON با فرمت زیبا
+      }
     }
   }, [initialData]);
 
@@ -68,6 +73,17 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
       return;
     }
 
+    let scheduleData: Record<string, Record<string, string>> | undefined = undefined;
+
+    if (platformId && schedule) {
+      try {
+        scheduleData = JSON.parse(schedule);
+      } catch (e) {
+        toast.error("Invalid schedule format. Please provide valid JSON.");
+        return;
+      }
+    }
+
     if (platformId) {
       updateMutation.mutate({
         id: platformId,
@@ -77,6 +93,7 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
           language: formData.language,
           posts_per_day: formData.posts_per_day,
           cookies: formData.cookies,
+          schedule: scheduleData,
         },
       });
     } else {
@@ -86,6 +103,7 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
     onClose();
     resetForm();
   };
+
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -148,6 +166,21 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
           onChange={(e) => setFormData({ ...formData, cookies: e.target.value })}
           placeholder="Cookies (optional)"
         />
+
+        {platformId && (
+          <>
+            <Textarea
+              value={schedule}
+              onChange={(e) => setSchedule(e.target.value)}
+              placeholder={`{
+          "Mon": { "send01": "08:30", "send02": "12:00" },
+          "Tue": { "send01": "08:30" }
+        }`}
+              className="font-mono"
+              rows={10}
+            />
+          </>
+        )}
 
         <Button onClick={handleSubmit}>
           {platformId ? "Save Changes" : "Add"}

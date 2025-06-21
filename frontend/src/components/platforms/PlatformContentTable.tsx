@@ -90,6 +90,7 @@ export const PlatformContentTable: React.FC<PlatformContentTableProps> = ({ plat
                     <TableHead>#</TableHead>
                     <TableHead>Thumbnail</TableHead>
                     <TableHead>Title</TableHead>
+                    <TableHead>Send Time</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -104,6 +105,7 @@ export const PlatformContentTable: React.FC<PlatformContentTableProps> = ({ plat
                             <img src={`${api.defaults.baseURL}/${content.thumb_filename}`} alt={content.title} className="w-12 h-12 rounded object-cover cursor-pointer" onClick={() => window.open(`${api.defaults.baseURL}/${content.video_filename}`, "_blank")} />
                           </TableCell>
                           <TableCell>{content.title}</TableCell>
+                          <TableCell>{content.send_time || "Not Scheduled"}</TableCell>
                           <TableCell>{content.status}</TableCell>
                           <TableCell className="text-right">
                             <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(content.id)}>

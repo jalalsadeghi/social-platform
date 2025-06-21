@@ -158,6 +158,7 @@ async def get_contents_by_platform_id(db: AsyncSession, platform_id: UUID, skip=
         select(ContentPlatform)
         .options(joinedload(ContentPlatform.content))
         .where(ContentPlatform.platform_id == platform_id)
+        .order_by(ContentPlatform.priority.asc())
         .offset(skip)
         .limit(limit)
     )
@@ -171,10 +172,12 @@ async def get_contents_by_platform_id(db: AsyncSession, platform_id: UUID, skip=
             "title": cp.content.ai_title,
             "video_filename": cp.content.video_filename,
             "thumb_filename": cp.content.thumb_filename,
-            "status": cp.status
+            "status": cp.status,
+            "priority": cp.priority,
         }
         for cp in content_platforms
     ]
+
 
 
 async def delete_content_platform(

@@ -6,7 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from uuid import UUID, uuid4
 from . import crud, schemas
-from .models import MusicFile
+from .models import MusicFile, PostStatus
+from modules.platform.models import Platform
 from .scraper.scraper import scrape_and_extract
 from core.database import get_db
 from core.dependencies import get_current_user
@@ -15,6 +16,7 @@ import os
 from core.config import settings
 import redis
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +94,8 @@ async def read_contents(
                 "platform_name": cp.platform.platform.value if cp.platform else None,
                 "account_identifier": cp.platform.account_identifier if cp.platform else None,
                 "status": cp.status,
-                "priority": cp.priority
+                "priority": cp.priority,
+                "send_time": "N"
             }
             for cp in content.content_platforms
         ]
@@ -116,7 +119,8 @@ async def read_content(
             "platform_name": cp.platform.platform.value if cp.platform else None,
             "account_identifier": cp.platform.account_identifier if cp.platform else None,
             "status": cp.status,
-            "priority": cp.priority
+            "priority": cp.priority,
+            "send_time": "N"
         }
         for cp in content.content_platforms
     ]
@@ -209,16 +213,70 @@ async def get_filtered_contents(
 
     return contents
 
+
 @router.get("/platform/{platform_id}/contents", response_model=List[schemas.PlatformContentOut])
 async def get_platform_contents(
     platform_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
     skip: int = 0,
-    limit: int = 30
+    limit: int = 10
 ):
     contents = await crud.get_contents_by_platform_id(db, platform_id, skip, limit)
-    return contents
+    platform = await db.get(Platform, platform_id)
+
+    schedule = platform.schedule
+
+    # تبدیل روزها به ترتیب استاندارد هفته
+    WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    
+    # ایجاد لیست مرتب شده از روزها و ساعات
+    schedule_list = []
+    for day in WEEKDAYS:
+        if day in schedule:
+            for send_time in sorted(schedule[day].values()):
+                schedule_list.append((day, send_time))
+
+    # دریافت ساعت فعلی به وقت گرینویچ
+    now_utc = datetime.utcnow()
+    current_day = WEEKDAYS[now_utc.weekday()]
+    current_time_str = now_utc.strftime("%H:%M")
+
+    # پیدا کردن اولین زمان ارسال بعدی بر اساس زمان فعلی
+    future_schedule_list = []
+
+    today_index = WEEKDAYS.index(current_day)
+    for offset in range(7):
+        day_index = (today_index + offset) % 7
+        day = WEEKDAYS[day_index]
+        if day in schedule:
+            times_today = sorted(schedule[day].values())
+            for send_time in times_today:
+                # اگر همان روز است، فقط ساعت‌های آینده را بگیرد
+                if offset == 0 and send_time > current_time_str:
+                    future_schedule_list.append(f"{day} {send_time}")
+                elif offset != 0:
+                    future_schedule_list.append(f"{day} {send_time}")
+
+    # اگر هیچ زمانی در امروز و روزهای بعدی یافت نشد (خیلی نادر)
+    if not future_schedule_list:
+        future_schedule_list = [f"{day} {time}" for day, time in schedule_list]
+
+    result = []
+    current_priority_index = 0
+
+    for cp in contents:
+        if cp["status"].value != "posted":
+            send_time = future_schedule_list[current_priority_index % len(future_schedule_list)]
+            current_priority_index += 1
+        else:
+            send_time = "Already posted"
+
+        cp["send_time"] = send_time
+        result.append(cp)
+
+    return result
+
 
 
 @router.delete("/content_platform/{content_platforms_id}", response_model=dict)

@@ -8,6 +8,8 @@ export interface PlatformContent {
   video_filename: string;
   thumb_filename: string;
   status: string;
+  priority: number;
+  send_time?: string;
 }
 
 export interface UpdatePriority {
@@ -19,7 +21,7 @@ export interface UpdatePriority {
 export const getPlatformContents = async (
   platformId: string,
   skip = 0,
-  limit = 30
+  limit = 50
 ): Promise<PlatformContent[]> => {
   const response = await api.get(
     `/contents/platform/${platformId}/contents?skip=${skip}&limit=${limit}`

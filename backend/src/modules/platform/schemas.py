@@ -22,6 +22,7 @@ class PlatformUpdate(BaseModel):
     language: Optional[Language] = None
     posts_per_day: Optional[int] = None
     cookies: Optional[str] = None
+    schedule: Optional[Dict[str, Dict[str, str]]] = None
 
 class PlatformOut(BaseModel):
     id: UUID

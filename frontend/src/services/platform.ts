@@ -24,15 +24,9 @@ export interface PlatformCreate {
   cookies?: string;
 }
 
-// export interface PlatformUpdate {
-//   platform?: "instagram" | "youtube" | "tiktok";
-//   password?: string;
-//   language?: "English" | "German" | "Persian";
-//   posts_per_day?: number;
-//   cookies?: string;
-// }
-
-export interface PlatformUpdate extends Partial<PlatformCreate> {}
+export interface PlatformUpdate extends Partial<PlatformCreate> {
+  schedule?: Record<string, Record<string, string>>;
+}
 
 export const getPlatforms = async (skip = 0, limit = 100): Promise<Platform[]> => {
   const response = await api.get(`/platforms?skip=${skip}&limit=${limit}`);

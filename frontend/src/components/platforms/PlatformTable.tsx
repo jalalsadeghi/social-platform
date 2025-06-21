@@ -25,7 +25,10 @@ export const PlatformTable = () => {
   
 
   const handleEditClick = (platform: any) => {
-    setSelectedPlatform(platform);
+    setSelectedPlatform({
+      ...platform,
+      schedule: platform.schedule,
+    });
     setDialogOpen(true);
   };
 
@@ -109,6 +112,7 @@ export const PlatformTable = () => {
             posts_per_day: selectedPlatform.posts_per_day,
             cookies: selectedPlatform.cookies,
             is_oauth: selectedPlatform.is_oauth,
+            schedule: selectedPlatform.schedule,
           }}
           open={dialogOpen}
           onClose={handleCloseDialog}

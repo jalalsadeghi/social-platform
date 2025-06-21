@@ -21,7 +21,9 @@ async def generate_schedule_with_ai(language: str, posts_per_day: int) -> dict:
         f"The schedule should exactly contain {posts_per_day} posts each day, distributed optimally based on "
         f"peak engagement times for regions where this language ({language}) is primarily spoken. "
         f"All times must be provided in Greenwich Mean Time (GMT/UTC). "
-        f"The JSON must strictly follow this structure without any additional text or explanation:\n\n"
+        f"The JSON must strictly follow this structure without any additional text or explanation:\n"
+        f"Ensure that all weekdays (\"Mon\", \"Tue\", \"Wed\", \"Thu\", \"Fri\", \"Sat\", \"Sun\") are correctly followed, "
+        f"and no other day names or variations are used. \n\n"
         f"{{\n"
         f"    \"Mon\":{{\"send01\":\"HH:MM\", \"send02\":\"HH:MM\", ...}},\n"
         f"    \"Tue\":{{\"send01\":\"HH:MM\", \"send02\":\"HH:MM\", ...}},\n"
@@ -31,7 +33,7 @@ async def generate_schedule_with_ai(language: str, posts_per_day: int) -> dict:
         f"    \"Sat\":{{\"send01\":\"HH:MM\", \"send02\":\"HH:MM\", ...}},\n"
         f"    \"Sun\":{{\"send01\":\"HH:MM\", \"send02\":\"HH:MM\", ...}}\n"
         f"}}\n\n"
-        f"Replace \"HH:MM\" with appropriate 24-hour format times in GMT/UTC.. "
+        f"Replace \"HH:MM\" with appropriate 24-hour format times in GMT/UTC.. \n"
         f"Do NOT add any explanatory text or notes. Return ONLY the JSON."
     )
 
@@ -208,27 +210,44 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
     credentials = db_platform.credentials or {}
     update_data = data.dict(exclude_unset=True)
 
+    # تشخیص دقیق تغییرات
+    posts_per_day_changed = 'posts_per_day' in update_data and update_data['posts_per_day'] != db_platform.posts_per_day
+    language_changed = 'language' in update_data and update_data['language'] != db_platform.language
+    schedule_changed = 'schedule' in update_data
+
     if 'password' in update_data and update_data['password']:
         credentials['password'] = encrypt(update_data['password'])
 
     if 'cookies' in update_data:
-        cookie_list = parse_netscape_cookies(update_data['cookies'])
-        db_platform.cookies = cookie_list
+        cookie_data = update_data['cookies']
+        try:
+            cookie_list = json.loads(cookie_data)
+            if isinstance(cookie_list, list):
+                db_platform.cookies = cookie_list
+            else:
+                raise ValueError("Cookies JSON is not a list")
+        except json.JSONDecodeError:
+            cookie_list = parse_netscape_cookies(cookie_data)
+            db_platform.cookies = cookie_list
 
     if 'platform' in update_data:
         db_platform.platform = update_data['platform']
 
-    if 'language' in update_data:
+    if language_changed:
         db_platform.language = update_data['language']
 
-    if 'posts_per_day' in update_data:
+    if posts_per_day_changed:
         db_platform.posts_per_day = update_data['posts_per_day']
 
-    # اگر زبان یا تعداد پست در روز تغییر کرده است، schedule جدید تولید شود
-    if 'language' in update_data or 'posts_per_day' in update_data:
+    # تولید schedule با اولویت واضح
+    if posts_per_day_changed or language_changed:
         lang = db_platform.language.value
         posts_per_day = db_platform.posts_per_day
-        db_platform.schedule = await generate_schedule_with_ai(lang, posts_per_day)
+        new_schedule = await generate_schedule_with_ai(lang, posts_per_day)
+        db_platform.schedule = new_schedule
+    elif schedule_changed:
+        # فقط در صورتی که posts_per_day و language تغییر نکرده باشد
+        db_platform.schedule = update_data['schedule']
 
     db_platform.credentials = credentials
 
@@ -249,6 +268,8 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
     }
 
     return response_data
+
+
 
 async def delete_platform(db: AsyncSession, platform_id: UUID, user_id: UUID):
     result = await db.execute(select(Platform).where(Platform.id == platform_id, Platform.user_id == user_id))

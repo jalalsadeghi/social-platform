@@ -110,7 +110,7 @@ export const deleteContent = async (id: string): Promise<{ detail: string }> => 
 };
 
 // Get user's music files
-export const getMusicFiles = async (skip = 0, limit = 30): Promise<MusicFile[]> => {
+export const getMusicFiles = async (skip = 0, limit = 10): Promise<MusicFile[]> => {
   const response = await api.get(`/contents/music/?skip=${skip}&limit=${limit}`);
   return response.data;
 };

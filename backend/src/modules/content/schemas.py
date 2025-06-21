@@ -73,6 +73,8 @@ class PlatformContentOut(BaseModel):
     video_filename: str
     thumb_filename: Optional[str]
     status: PostStatus
+    priority: int
+    send_time: Optional[str]
 
     class Config:
         from_attributes = True

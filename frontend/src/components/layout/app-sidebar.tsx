@@ -77,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       icon: UnplugIcon,
       children: platforms.map((platform) => ({
         title: platform.username,
-        url: `/contents/platform/${platform.id}/contents?skip=0&limit=30`,
+        url: `/contents/platform/${platform.id}/contents`,
       })),
     },
     {
