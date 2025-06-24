@@ -1,4 +1,4 @@
-# modules.platform.instagram_bot.tasks.scheduler.py
+# modules.platform.bots.tasks.scheduler.py
 from celery import shared_task
 import asyncio
 import logging
@@ -8,15 +8,15 @@ from sqlalchemy import select, and_, or_
 from core.sync_database import SyncSession
 from modules.content.models import ContentPlatform, PostStatus
 from core.config import settings
-from .DailyTaskExecutor import generate_instagram_posting
+from .DailyTaskExecutor import generate_posting
 
 redis_client = redis.Redis.from_url(settings.CELERY_BROKER_URL)
 LOCK_EXPIRE = 600  # 10 minutes lock
 
 # Wrapper to run async functions synchronously
-def sync_generate_reels(content_id, user_id, platform_id):
+def sync_generate_reels(content_id, user_id, platform_id, platform_name):
     return asyncio.run(
-        generate_instagram_posting(content_id, user_id, platform_id)
+        generate_posting(content_id, user_id, platform_id, platform_name)
     )
 
 @shared_task(bind=True)
@@ -48,7 +48,7 @@ def generate_reels_task(self):
                 and_(
                     or_(
                         ContentPlatform.status == PostStatus.ready,
-                        ContentPlatform.status == PostStatus.failed
+                        ContentPlatform.status == PostStatus.failed,
                     ),
                     ContentPlatform.priority == 0
                 )
@@ -64,6 +64,7 @@ def generate_reels_task(self):
         content_id = ready_reel.content_id
         platform_id = ready_reel.platform_id
         user_id = ready_reel.platform.user_id
+        platform_name = ready_reel.platform.account_identifier
         logging.info(f"Found ready reel: {ready_reel.id}, Content ID: {content_id}")
 
         ready_reel.status = PostStatus.posting
@@ -73,9 +74,13 @@ def generate_reels_task(self):
         logging.info(f"Reel status updated to posting: {ready_reel.id}")
 
         try:
-            final_reels = sync_generate_reels(content_id, user_id, platform_id)
+            final_reels = sync_generate_reels(content_id, user_id, platform_id, platform_name)
 
-            ready_reel.status = PostStatus.posted if final_reels else PostStatus.failed
+            if final_reels:
+                ready_reel.status = PostStatus.posted
+                ready_reel.url = final_reels
+            else:
+                ready_reel.status = PostStatus.failed
             session.commit()
 
             progress_status = 100 if final_reels else "failed"

@@ -15,7 +15,7 @@ celery_app = Celery(
     backend=settings.CELERY_RESULT_BACKEND,
     include=[
         "modules.content.generate_video.task_generator_video",
-        "modules.platform.instagram_bot.tasks.scheduler",
+        "modules.platform.bots.tasks.scheduler",
         "modules.platform.tasks.schedule_processor",
     ]
 )
@@ -36,7 +36,7 @@ celery_app.conf.update(
             "schedule": crontab(minute="*/1"),
         },
         "post-executor-task": {
-            "task": "modules.platform.instagram_bot.tasks.scheduler.generate_reels_task",
+            "task": "modules.platform.bots.tasks.scheduler.generate_reels_task",
             "schedule": crontab(minute="*/1"), 
         },
         "schedule-processor-task": {

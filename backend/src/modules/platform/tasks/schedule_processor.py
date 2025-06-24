@@ -46,7 +46,7 @@ def schedule_priority_shift_task(self):
 
                 if redis_client.get(operation_key):
                     continue
-
+                
                 next_send_time = sorted_send_times[idx + 1] if idx + 1 < len(sorted_send_times) else None
 
                 if (current_hour_minute >= send_time) and (next_send_time is None or current_hour_minute < next_send_time):
@@ -54,7 +54,7 @@ def schedule_priority_shift_task(self):
                         update(ContentPlatform)
                         .where(
                             ContentPlatform.platform_id == platform.id,
-                            ContentPlatform.status == PostStatus.ready,
+                            ContentPlatform.status.in_([PostStatus.ready, PostStatus.pending]),
                             ContentPlatform.priority > 0
                         )
                         .values(priority=ContentPlatform.priority - 1)

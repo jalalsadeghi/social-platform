@@ -48,10 +48,10 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
         password: "",
         language: initialData.language ?? "English",
         posts_per_day: initialData.posts_per_day ?? 0,
-        cookies: initialData.cookies || "",
+        cookies: initialData.cookies ? JSON.stringify(initialData.cookies, null, 2) : "",
       });
       if (initialData.schedule) {
-        setSchedule(JSON.stringify(initialData.schedule, null, 2)); // JSON با فرمت زیبا
+        setSchedule(JSON.stringify(initialData.schedule, null, 2));
       }
     }
   }, [initialData]);
@@ -67,42 +67,58 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
     });
   };
 
+// در handleSubmit:
   const handleSubmit = async () => {
     if (!platformId && (!formData.username || !formData.password)) {
       toast.error("Username and Password are required.");
       return;
     }
 
-    let scheduleData: Record<string, Record<string, string>> | undefined = undefined;
+    let parsedCookies: Cookie[] | undefined;
+
+    if (formData.cookies) {
+      try {
+        parsedCookies = JSON.parse(formData.cookies);
+        if (!Array.isArray(parsedCookies)) {
+          throw new Error();
+        }
+      } catch {
+        toast.error("Invalid cookies format. Please provide valid JSON array.");
+        return;
+      }
+    }
+
+    let scheduleData: Record<string, Record<string, string>> | undefined;
 
     if (platformId && schedule) {
       try {
         scheduleData = JSON.parse(schedule);
-      } catch (e) {
+      } catch {
         toast.error("Invalid schedule format. Please provide valid JSON.");
         return;
       }
     }
 
+    const payload = {
+      platform: formData.platform,
+      username: formData.username,
+      password: formData.password || undefined,
+      language: formData.language,
+      posts_per_day: formData.posts_per_day,
+      cookies: parsedCookies,
+      schedule: scheduleData,
+    };
+
     if (platformId) {
-      updateMutation.mutate({
-        id: platformId,
-        data: {
-          platform: formData.platform,
-          password: formData.password || undefined,
-          language: formData.language,
-          posts_per_day: formData.posts_per_day,
-          cookies: formData.cookies,
-          schedule: scheduleData,
-        },
-      });
+      updateMutation.mutate({ id: platformId, data: payload });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(payload);
     }
 
     onClose();
     resetForm();
   };
+
 
 
   return (

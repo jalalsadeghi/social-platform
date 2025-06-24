@@ -1,4 +1,4 @@
-# backend/src/modules/platform/instagram_bot/utils/security.py
+# backend/src/modules/platform/bot/utils/security.py
 from core.config import settings
 from cryptography.fernet import Fernet
 

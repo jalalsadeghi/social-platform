@@ -75,6 +75,8 @@ class PlatformContentOut(BaseModel):
     status: PostStatus
     priority: int
     send_time: Optional[str]
+    url: Optional[str] = None
+    updated_at: Optional[datetime]
 
     class Config:
         from_attributes = True

@@ -1,4 +1,4 @@
-# backend/src/modules/platform/instagram_bot/services/instagram_post.py
+# backend/src/modules/platform/bot/instagram/instagram_post.py
 from ..utils.common import random_delay, safe_click, screenshot #mouse_move_click
 from sqlalchemy.ext.asyncio import AsyncSession
 from modules.content.crud import get_content_by_id
@@ -6,8 +6,8 @@ from playwright.async_api import async_playwright
 import random
 import time
 
-async def post_to_instagram(db, user_id, page, content_id):
-
+async def post_to_instagram(db, user_id, page, content_id, platform_name):
+    print(f"Platform name: {platform_name}")
     content = await get_content_by_id(db, content_id, user_id)
 
     thumbnail_file = content.thumb_filename
@@ -57,22 +57,35 @@ async def post_to_instagram(db, user_id, page, content_id):
                 return
         
         if name == "Content_Box":
-            # Type content (بعد از اطمینان از کلیک قبلی)
             ai_content = content.ai_content
-            await page.keyboard.type(ai_content, delay=random.randint(50, 150))
-            await random_delay(2, 5)
+
+            # کپی کردن ai_content در کلیپ‌بورد مرورگر
+            await page.evaluate(f'''
+                navigator.clipboard.writeText(`{ai_content}`);
+            ''')
+            await random_delay(0.5, 1)
+
+            # کلیک کردن در کادر محتوا برای قرار دادن نشانگر ماوس
+            await page.click(selector)
+            await random_delay(0.5, 1)
+
+            # پیست کردن متن
+            await page.keyboard.down('Control')
+            await page.keyboard.press('V')
+            await page.keyboard.up('Control')
+
+            await random_delay(1, 2)
             await screenshot(page, "210_Content_Box")
+
             # انتقال فوکوس به دکمه Share با 7 بار فشردن Tab
             for _ in range(7):
                 await page.keyboard.press("Tab")
                 await random_delay(0.5, 0.7)
 
-            # focused_element = await page.evaluate("document.activeElement.outerHTML")
-            # print(f"🔍 Element focused now: {focused_element}")
-
-            # حالا دکمه Share باید فوکوس شده باشد
+            # ارسال محتوا
             await page.keyboard.press("Enter")
             await screenshot(page, "210_Share")
+
 
 
     spinner_selector = 'img[alt="Spinner placeholder"][src*="ShFi4iY4Fd9.gif"]' 
@@ -113,6 +126,22 @@ async def post_to_instagram(db, user_id, page, content_id):
 
     await screenshot(page, "221_Final", "error")
 
-    await page.goto("https://www.instagram.com/ki.blick/")
+    await page.goto(f"https://www.instagram.com/{platform_name}/")
 
-    return True
+    await page.wait_for_selector('a[href*="/reel/"]', timeout=30000)
+
+    ai_content_snippet = content.ai_content[:50]
+    elements = await page.query_selector_all('a[href*="/reel/"]')
+
+    for elem in elements:
+        img = await elem.query_selector('img[alt]')
+        if img:
+            alt_text = await img.get_attribute('alt')
+            if ai_content_snippet in alt_text:
+                href = await elem.get_attribute('href')
+                reel_id = href.split('/')[-2]
+                print(f"✅ Found reel ID: {reel_id}")
+                return reel_id
+
+    print("⚠️ Could not find the posted reel.")
+    return False

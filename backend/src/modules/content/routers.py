@@ -137,30 +137,11 @@ async def update_content(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    
-    # updated_content = await crud.update_content(db, content_id, current_user.id, content)
-    # if not updated_content:
-    #     raise HTTPException(status_code=404, detail="Content not found")
-    
-    # updated_content.platforms_status = [
-    #     {
-    #         "platform_id": cp.platform_id,
-    #         "platform_name": cp.platform.platform.value if cp.platform else None,
-    #         "account_identifier": cp.platform.account_identifier if cp.platform else None,
-    #         "status": cp.status,
-    #         "priority": cp.priority
-    #     }
-    #     for cp in updated_content.content_platforms
-    # ]
+    updated_content = await crud.update_content(db, content_id, current_user.id, content.platforms_id)
+    if not updated_content:
+        raise HTTPException(status_code=404, detail="Content not found or not editable.")
 
-    # updated_content.user_name = updated_content.user.username if updated_content.user else None
-
-    # return updated_content
-    content = await crud.get_content_by_id(db, content_id, current_user.id)
-    if not content:
-        raise HTTPException(status_code=404, detail="Content not found")
-
-    content.platforms_status = [
+    updated_content.platforms_status = [
         {
             "platform_id": cp.platform_id,
             "platform_name": cp.platform.platform.value if cp.platform else None,
@@ -168,12 +149,12 @@ async def update_content(
             "status": cp.status,
             "priority": cp.priority
         }
-        for cp in content.content_platforms
+        for cp in updated_content.content_platforms
     ]
 
-    content.user_name = content.user.username if content.user else None
+    updated_content.user_name = updated_content.user.username if updated_content.user else None
 
-    return content
+    return updated_content
 
 @router.delete("/{content_id}", response_model=dict)
 async def delete_content(
@@ -220,7 +201,7 @@ async def get_platform_contents(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
     skip: int = 0,
-    limit: int = 10
+    limit: int = 30
 ):
     contents = await crud.get_contents_by_platform_id(db, platform_id, skip, limit)
     platform = await db.get(Platform, platform_id)

@@ -1,4 +1,4 @@
-# backend/src/modules/platform/instagram_bot/schemas.py
+# backend/src/modules/platform/bot/schemas.py
 from pydantic import BaseModel
 from uuid import UUID
 from datetime import datetime

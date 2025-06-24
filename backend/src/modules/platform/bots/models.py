@@ -1,4 +1,4 @@
-# src/modules/platform/instagram_bot/models.py
+# src/modules/platform/bot/models.py
 import uuid
 from sqlalchemy import Column, DateTime, ForeignKey, String, JSON
 from sqlalchemy.dialects.postgresql import UUID

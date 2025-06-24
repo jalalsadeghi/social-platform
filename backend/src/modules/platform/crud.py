@@ -2,6 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from sqlalchemy.future import select
+from typing import Optional, List, Dict, Any
 from .models import Platform, SocialPlatform
 from modules.ai.models import Language
 from modules.ai.crud import generate_ai_content
@@ -55,21 +56,21 @@ async def generate_schedule_with_ai(language: str, posts_per_day: int) -> dict:
     return schedule_dict
 
 
-def parse_netscape_cookies(cookie_str: str):
-    cookies = []
-    for line in cookie_str.strip().split("\n"):
-        if line.startswith('#') or not line.strip():
-            continue
-        domain, _, path, secure, expires, name, value = line.strip().split("\t")
-        cookies.append({
-            "domain": domain,
-            "path": path,
-            "name": name,
-            "value": value,
-            "secure": secure.lower() == "true",
-            "expires": int(expires)
-        })
-    return cookies
+# def parse_netscape_cookies(cookie_str: str):
+#     cookies = []
+#     for line in cookie_str.strip().split("\n"):
+#         if line.startswith('#') or not line.strip():
+#             continue
+#         domain, _, path, secure, expires, name, value = line.strip().split("\t")
+#         cookies.append({
+#             "domain": domain,
+#             "path": path,
+#             "name": name,
+#             "value": value,
+#             "secure": secure.lower() == "true",
+#             "expires": int(expires)
+#         })
+#     return cookies
 
 
 async def create_platform(
@@ -78,7 +79,7 @@ async def create_platform(
         platform: SocialPlatform,
         identifier: str, 
         credentials: dict, 
-        cookies: str,
+        cookies: Optional[List[Dict[str, Any]]],
         language: Language,
         posts_per_day: int,
         is_oauth: bool,
@@ -92,7 +93,7 @@ async def create_platform(
             detail="This account_identifier already exists."
         )
     encrypted_creds = {key: encrypt(value) for key, value in credentials.items()}
-    cookie_list = parse_netscape_cookies(cookies)
+    # cookie_list = parse_netscape_cookies(cookies)
     schedule = await generate_schedule_with_ai(language.value, posts_per_day)
     print(f"Raw content received schedule: {schedule}")
 
@@ -104,7 +105,7 @@ async def create_platform(
         language=language,
         posts_per_day=posts_per_day,
         schedule=schedule,
-        cookies=cookie_list,
+        cookies=cookies,
         is_oauth=is_oauth,
     )
     db.add(account)
@@ -131,7 +132,7 @@ async def get_platform_by_identifier(db: AsyncSession, user_id: UUID, identifier
         "language": platform.language,
         "posts_per_day": platform.posts_per_day,
         "schedule": schedule, 
-        "cookies": json.dumps(platform.cookies),
+        "cookies": platform.cookies,
         "created_at": platform.created_at,
         "updated_at": platform.updated_at
     }
@@ -155,7 +156,7 @@ async def get_platforms(user_id: UUID, db: AsyncSession, skip: int = 0, limit: i
             "language": platform.language,
             "posts_per_day": platform.posts_per_day,
             "schedule": platform.schedule, 
-            "cookies": json.dumps(platform.cookies) if platform.cookies else None,
+            "cookies": platform.cookies,
             "updated_at": platform.updated_at,
             "created_at": platform.created_at
         }
@@ -188,12 +189,13 @@ async def get_platform(db: AsyncSession, platform_id: UUID, user_id: UUID):
         "language": platform.language,
         "posts_per_day": platform.posts_per_day,
         "schedule": platform.schedule,         
-        "cookies": json.dumps(platform.cookies) if platform.cookies else None,
+        "cookies": platform.cookies,
         "updated_at": platform.updated_at,
         "created_at": platform.created_at
     }
 
     return decrypted_creds
+
 
 async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, data: PlatformUpdate):
     result = await db.execute(
@@ -210,7 +212,7 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
     credentials = db_platform.credentials or {}
     update_data = data.dict(exclude_unset=True)
 
-    # تشخیص دقیق تغییرات
+    # تشخیص تغییرات
     posts_per_day_changed = 'posts_per_day' in update_data and update_data['posts_per_day'] != db_platform.posts_per_day
     language_changed = 'language' in update_data and update_data['language'] != db_platform.language
     schedule_changed = 'schedule' in update_data
@@ -219,16 +221,11 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
         credentials['password'] = encrypt(update_data['password'])
 
     if 'cookies' in update_data:
-        cookie_data = update_data['cookies']
-        try:
-            cookie_list = json.loads(cookie_data)
-            if isinstance(cookie_list, list):
-                db_platform.cookies = cookie_list
-            else:
-                raise ValueError("Cookies JSON is not a list")
-        except json.JSONDecodeError:
-            cookie_list = parse_netscape_cookies(cookie_data)
+        cookie_list = update_data['cookies']
+        if isinstance(cookie_list, list):
             db_platform.cookies = cookie_list
+        else:
+            raise ValueError("Cookies data must be a list of dictionaries")
 
     if 'platform' in update_data:
         db_platform.platform = update_data['platform']
@@ -239,14 +236,13 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
     if posts_per_day_changed:
         db_platform.posts_per_day = update_data['posts_per_day']
 
-    # تولید schedule با اولویت واضح
+    # تولید یا به‌روزرسانی schedule
     if posts_per_day_changed or language_changed:
         lang = db_platform.language.value
         posts_per_day = db_platform.posts_per_day
         new_schedule = await generate_schedule_with_ai(lang, posts_per_day)
         db_platform.schedule = new_schedule
     elif schedule_changed:
-        # فقط در صورتی که posts_per_day و language تغییر نکرده باشد
         db_platform.schedule = update_data['schedule']
 
     db_platform.credentials = credentials
@@ -262,12 +258,13 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
         "language": db_platform.language,
         "posts_per_day": db_platform.posts_per_day,
         "schedule": db_platform.schedule,
-        "cookies": json.dumps(db_platform.cookies),
+        "cookies": db_platform.cookies,
         "created_at": db_platform.created_at,
         "updated_at": db_platform.updated_at
     }
 
     return response_data
+
 
 
 

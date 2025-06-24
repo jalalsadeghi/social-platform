@@ -1,13 +1,13 @@
-# src/modules/platform/instagram_bot/routers.py
+# src/modules/platform/bot/routers.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.database import get_db
 from core.dependencies import get_current_user
-from .services.secure_credentials import (
+from .utils.secure_credentials import (
     store_social_credentials,
     get_social_credentials
 )
-from .services.instagram_client import login_instagram
+from .instagram.instagram_client import login_instagram
 from pydantic import BaseModel
 from uuid import UUID
 from typing import List

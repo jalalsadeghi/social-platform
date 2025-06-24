@@ -67,30 +67,42 @@ async def get_content_by_id(db: AsyncSession, content_id: UUID, user_id: UUID) -
     )
     return result.scalars().first()
 
+
 async def update_content(
-    db: AsyncSession, content_id: UUID, user_id: UUID, data: ContentBase
+    db: AsyncSession, content_id: UUID, user_id: UUID, platforms_id: List[UUID]
 ) -> Optional[Content]:
     db_content = await get_content_by_id(db, content_id, user_id)
-    if not db_content:
+
+    if not db_content or db_content.status != QueueStatus.ready:
         return None
 
-    await db.execute(
-        ContentPlatform.__table__.delete().where(ContentPlatform.content_id == db_content.id)
-    )
+    current_platform_ids = {cp.platform_id for cp in db_content.content_platforms}
+    new_platform_ids = set(platforms_id)
 
-    for platform_id in data.platforms_id:
+    # Platforms to add and remove
+    platforms_to_add = new_platform_ids - current_platform_ids
+    platforms_to_remove = current_platform_ids - new_platform_ids
+
+    # Remove platforms that are not selected anymore
+    if platforms_to_remove:
+        await db.execute(
+            ContentPlatform.__table__.delete().where(
+                ContentPlatform.content_id == db_content.id,
+                ContentPlatform.platform_id.in_(platforms_to_remove)
+            )
+        )
+
+    # Add new platforms
+    for platform_id in platforms_to_add:
         priority = await get_max_priority(db, user_id, platform_id) + 1
-        db_content_platform = ContentPlatform(
+        new_content_platform = ContentPlatform(
             content_id=db_content.id,
             platform_id=platform_id,
             priority=priority,
             url="",
+            status=PostStatus.ready
         )
-        db.add(db_content_platform)
-
-    update_fields = data.dict(exclude_unset=True, exclude={"platforms_id"})
-    for field, value in update_fields.items():
-        setattr(db_content, field, value)
+        db.add(new_content_platform)
 
     await db.commit()
     await db.refresh(db_content)
@@ -104,7 +116,8 @@ async def get_max_priority(db: AsyncSession, user_id: UUID, platform_id: UUID) -
         .where(
             Content.user_id == user_id,
             ContentPlatform.platform_id == platform_id,
-            ContentPlatform.status == PostStatus.ready
+            ContentPlatform.status == PostStatus.ready,
+            ContentPlatform.status == PostStatus.pending,
         )
     )
     max_priority = result.scalar()
@@ -174,6 +187,8 @@ async def get_contents_by_platform_id(db: AsyncSession, platform_id: UUID, skip=
             "thumb_filename": cp.content.thumb_filename,
             "status": cp.status,
             "priority": cp.priority,
+            "url": cp.url,
+            "updated_at": cp.content.updated_at,
         }
         for cp in content_platforms
     ]

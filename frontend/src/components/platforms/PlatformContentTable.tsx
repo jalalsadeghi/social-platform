@@ -40,7 +40,10 @@ export const PlatformContentTable: React.FC<PlatformContentTableProps> = ({ plat
     if (selectedStatus === "ready") {
       filteredContents = filteredContents.sort((a, b) => a.priority - b.priority);
     } else {
-      filteredContents = filteredContents.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // مرتب کردن بر اساس آخرین آپدیت
+      filteredContents = filteredContents.sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      );
     }
 
     setContents(filteredContents);
@@ -104,7 +107,20 @@ export const PlatformContentTable: React.FC<PlatformContentTableProps> = ({ plat
                           <TableCell>
                             <img src={`${api.defaults.baseURL}/${content.thumb_filename}`} alt={content.title} className="w-12 h-12 rounded object-cover cursor-pointer" onClick={() => window.open(`${api.defaults.baseURL}/${content.video_filename}`, "_blank")} />
                           </TableCell>
-                          <TableCell>{content.title}</TableCell>
+                          <TableCell>
+                            {content.status === "posted" && content.url ? (
+                              <a
+                                href={`https://www.instagram.com/p/${content.url}/`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                {content.title}
+                              </a>
+                            ) : (
+                              <span>{content.title}</span>
+                            )}
+                          </TableCell>
                           <TableCell>{content.send_time || "Not Scheduled"}</TableCell>
                           <TableCell>{content.status}</TableCell>
                           <TableCell className="text-right">

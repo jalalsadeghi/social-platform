@@ -90,27 +90,31 @@ def generate_video_sync(
         remove_audio: bool,
         music_filename: str,
         random_name: str,
+        watermark: bool = False
     ):
 
     video_clip = VideoFileClip(video_filename)
     video_duration = video_clip.duration
 
-    # ایجاد واترمارک ...
-    font_path = 'src/core/assets/ARIALBD.TTF'
-    watermark_text =  "KI-Blick" #f"@{uploader}"
-    watermark_clip = TextClip(
-        text=watermark_text,
-        font_size=24,
-        color='white',
-        font=font_path,
-        duration=video_duration 
-    )
+    if watermark:
+        # ایجاد واترمارک ...
+        font_path = 'src/core/assets/ARIALBD.TTF'
+        watermark_text =  "KI-Blick" #f"@{uploader}"
+        watermark_clip = TextClip(
+            text=watermark_text,
+            font_size=24,
+            color='white',
+            font=font_path,
+            duration=video_duration 
+        )
 
-    position = (5, 5)
+        position = (5, 5)
 
-    watermark_clip = watermark_clip.with_position(position)
+        watermark_clip = watermark_clip.with_position(position)
 
-    video_mark = CompositeVideoClip([video_clip, watermark_clip])
+        video_mark = CompositeVideoClip([video_clip, watermark_clip])
+    else:
+        video_mark = video_clip
 
     audio_clips = []
 

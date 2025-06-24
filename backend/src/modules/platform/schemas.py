@@ -1,7 +1,7 @@
 # modules/platform/schemas.py
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from .models import SocialPlatform, Language
 from uuid import UUID
 
@@ -11,7 +11,7 @@ class PlatformBase(BaseModel):
     platform: SocialPlatform
     language: Language
     posts_per_day: int
-    cookies: Optional[str]
+    cookies: Optional[List[Dict[str, Any]]]
 
 class PlatformCreate(PlatformBase):
     pass
@@ -21,7 +21,7 @@ class PlatformUpdate(BaseModel):
     platform: Optional[SocialPlatform] = None
     language: Optional[Language] = None
     posts_per_day: Optional[int] = None
-    cookies: Optional[str] = None
+    cookies: Optional[List[Dict[str, Any]]] = None
     schedule: Optional[Dict[str, Dict[str, str]]] = None
 
 class PlatformOut(BaseModel):
@@ -32,7 +32,7 @@ class PlatformOut(BaseModel):
     language: Language
     posts_per_day: int
     schedule: Dict[str, Dict[str, str]] 
-    cookies: Optional[str]
+    cookies: Optional[List[Dict[str, Any]]]
     created_at: datetime
     updated_at: datetime
 

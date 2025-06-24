@@ -1,9 +1,9 @@
-# backend/src/modules/platform/instagram_bot/services/secure_credentials.py
+# backend/src/modules/platform/bot/instagram/secure_credentials.py
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from modules.platform.models import Platform
-from ..utils.security import encrypt, decrypt
+from .security import encrypt, decrypt
 
 async def store_social_credentials(
         db: AsyncSession, 

@@ -10,6 +10,8 @@ export interface PlatformContent {
   status: string;
   priority: number;
   send_time?: string;
+  url: string;
+  updated_at: string;
 }
 
 export interface UpdatePriority {
@@ -21,7 +23,7 @@ export interface UpdatePriority {
 export const getPlatformContents = async (
   platformId: string,
   skip = 0,
-  limit = 50
+  limit = 1000
 ): Promise<PlatformContent[]> => {
   const response = await api.get(
     `/contents/platform/${platformId}/contents?skip=${skip}&limit=${limit}`

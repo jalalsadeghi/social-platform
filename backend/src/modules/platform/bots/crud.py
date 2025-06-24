@@ -1,4 +1,4 @@
-# src/modules/platform/instagram_bot/crud.py
+# src/modules/platform/bot/crud.py
 from sqlalchemy.orm import Session
 from . import models, schemas
 

@@ -1,6 +1,24 @@
 // src/services/platform.ts
 import api from "@/services/api";
 
+export interface Cookie {
+  domain: string;
+  expirationDate?: number;
+  hostOnly: boolean;
+  httpOnly: boolean;
+  name: string;
+  path: string;
+  sameSite: string;
+  secure: boolean;
+  session: boolean;
+  storeId?: string;
+  value: string;
+  partitionKey?: {
+    hasCrossSiteAncestor: boolean;
+    topLevelSite: string;
+  };
+}
+
 export interface Platform {
   id: string;
   user_id: string;
@@ -9,7 +27,7 @@ export interface Platform {
   language: "English" | "German" | "Persian";
   posts_per_day: number;
   password?: string;
-  cookies?: string;
+  cookies?: Cookie[];
   is_oauth: boolean;
   created_at: string;
   updated_at: string;
@@ -21,7 +39,7 @@ export interface PlatformCreate {
   password: string;
   language: "English" | "German" | "Persian";
   posts_per_day: number;
-  cookies?: string;
+  cookies?: Cookie[];
 }
 
 export interface PlatformUpdate extends Partial<PlatformCreate> {
