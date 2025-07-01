@@ -14,6 +14,7 @@ async def post_to_youtube(db, user_id, page, content_id, platform_name):
     media = content.video_filename
     title = content.ai_title
     ai_content = content.ai_content
+    video_id = ""
 
     steps = [
         ('button[aria-label="Create"]', "Create"),
@@ -21,9 +22,15 @@ async def post_to_youtube(db, user_id, page, content_id, platform_name):
         ('div.dialog-content div#title:has-text("Upload videos")', "Upload_Dialog_Opened"),
         ('ytcp-button#select-files-button button', "Select_Files"),
         ('ytcp-social-suggestions-textbox#title-textarea div#textbox[contenteditable="true"]', "Title_Box"),
-        ('div#description-textarea div#textbox[contenteditable="true"]', "Description_Box"),
+        ('div#description-container div#description-wrapper div#description-textarea div#textbox[contenteditable="true"]', "Description_Box"),
         ('tp-yt-paper-radio-button[name="VIDEO_MADE_FOR_KIDS_NOT_MFK"]', "Select_Not_Made_For_Kids"),
         ('ytcp-button#next-button button', "Next_Button"),
+        ('ytcp-button#next-button[aria-label="Next"]:not([aria-disabled="true"]) button', "Next_Button_Element"),
+        ('ytcp-button#next-button button[aria-label="Next"]:not([aria-disabled="true"])', "Next_Button_Checks"),
+        ('tp-yt-paper-radio-button[name="PUBLIC"]', "Select_Public"),
+        ('a[href*="youtube.com/shorts/"]', "Select_Video_ID"),
+        ('ytcp-button#done-button button[aria-label="Save"]:not([aria-disabled="true"])', "Save_Button")
+        ('ytcp-button#close-button button', "Close_Button"),
     ]
     
     for index, (selector, name) in enumerate(steps, start=201):
@@ -36,39 +43,62 @@ async def post_to_youtube(db, user_id, page, content_id, platform_name):
                 print("❌ Upload Dialog did not appear within timeout. Exiting safely.")
                 await screenshot(page, name, "error")
                 return False
+            
         elif name == "Title_Box":
-            safe_evaluate(page, selector, title, f"{index}_{name}")
-        
+            try:
+                await page.wait_for_selector(selector, state='visible', timeout=120000)
+                print(f"✅ Title Box is visible. {index}_{name}") 
+                await safe_evaluate(page, selector, title, f"{index}_{name}")
+            except Exception as e:
+                print(f"❌ Error evaluating Title_Box: {e}")
+                await screenshot(page, name, "error")
+                return False
+            
         elif name == "Description_Box":
-            safe_evaluate(page, selector, ai_content, f"{index}_{name}")
+            xpath_selector = '//ytcp-video-description//*[@id="description-textarea"]//*[@id="textbox" and @contenteditable="true"]'
+            try:
+                await page.wait_for_selector(f'xpath={xpath_selector}', state='visible', timeout=120000)
+                print(f"✅ Description Box is visible. {index}_{name}")
+                await safe_evaluate(page, f'xpath={xpath_selector}', ai_content, f"{index}_{name}")
+            except Exception as e:
+                print(f"❌ Error evaluating Description_Box: {e}")
+                await screenshot(page, name, "error")
+                return False
+        elif name == "Select_URL":
+            try:
+                await page.wait_for_selector(selector, state='visible', timeout=60000)
+                video_link_element = await page.query_selector(selector)
+                video_url = await video_link_element.get_attribute('href')
 
+                if video_url:
+                    video_id = video_url.strip('/').split('/')[-1]
+                    print(f"✅ Found video ID: {video_id}")
+                else:
+                    print("❌ Could not find video URL")
+                    await screenshot(page, "video_link", "error")
+                    return False
+            except Exception as e:
+                print(f"❌ Error clicking Select_URL: {e}")
+                await screenshot(page, name, "error")
+                return False
         else:
             clicked = await safe_click(page, selector, f"{index}_{name}")
             if not clicked:
-                print(f"❌ Could not complete step: {name}. Exiting safely.")
+                print(f"❌ Could not complete step: {index}_{name}. Exiting safely.")
                 return False
             
             if name == "Select_Files":
                 file_input_selector = 'input[type="file"][name="Filedata"]'
                 try:
                     await page.set_input_files(file_input_selector, media)
-                    
-                    # After successfully uploading media, wait for the Details box to appear
-                    details_selector = 'ytcp-video-metadata-editor-basics h1:has-text("Details")'
-                    try:
-                        await page.wait_for_selector(details_selector, state='visible', timeout=30000)
-                        print(f"✅ Media files uploaded successfully. {index}_{name}")
-                    except:
-                        print("❌ Details box did not appear within timeout.")
-                        await screenshot(page, "details_box", "error")
-                        return False
-                    
+                    print("✅ Media files uploaded successfully.")
                 except Exception as e:
                     print(f"❌ Failed to upload media files: {e}")
                     await screenshot(page, "upload_media", "error")
                     return False
-                
-        
+
+    return video_id
+
     #     if name == "Select_Video" or name == "Select_thumbnail":
     #         # Upload media files
     #         file_input_selector = 'input[type="file"]._ac69'
@@ -154,20 +184,20 @@ async def post_to_youtube(db, user_id, page, content_id, platform_name):
 
     # await page.goto(f"https://www.youtube.com/{platform_name}/")
 
-    # await page.wait_for_selector('a[href*="/reel/"]', timeout=30000)
+    await page.wait_for_selector('a[href*="/reel/"]', timeout=30000)
 
-    # ai_content_snippet = content.ai_content[:50]
-    # elements = await page.query_selector_all('a[href*="/reel/"]')
+    ai_content_snippet = content.ai_content[:50]
+    elements = await page.query_selector_all('a[href*="/reel/"]')
 
-    # for elem in elements:
-    #     img = await elem.query_selector('img[alt]')
-    #     if img:
-    #         alt_text = await img.get_attribute('alt')
-    #         if ai_content_snippet in alt_text:
-    #             href = await elem.get_attribute('href')
-    #             reel_id = href.split('/')[-2]
-    #             print(f"✅ Found reel ID: {reel_id}")
-    #             return reel_id
+    for elem in elements:
+        img = await elem.query_selector('img[alt]')
+        if img:
+            alt_text = await img.get_attribute('alt')
+            if ai_content_snippet in alt_text:
+                href = await elem.get_attribute('href')
+                reel_id = href.split('/')[-2]
+                print(f"✅ Found reel ID: {reel_id}")
+                return reel_id
 
     # print("⚠️ Could not find the posted reel.")
     return False

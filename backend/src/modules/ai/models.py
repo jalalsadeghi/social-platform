@@ -18,30 +18,30 @@ class PromptType(enum.Enum):
 
 class PromptSample(enum.Enum):
     English = (
-        "Based on information gathered from the internet and provided to you, write an optimized and up-to-date text.\n"
-        "Make sure to include the latest facts, statistics, trends, and unique, engaging insights obtained through internet research about the video's topic, so that the content you produce is credible, scientific, practical, and up-to-date.\n"
-        "The tone of the narratives is always friendly, warm, optimistic, with a touch of humor, and engaging, written in a natural, conversational style.\n"
-        "The narratives are crafted to build trust and connection with the audience.\n"
-        "When writing the text, pay close attention to the provided internet-sourced information to ensure accuracy and freshness.\n"
-        "Write only the original text and do not write any sentences or explanations before or after the text."
+"Write a clear, up-to-date, and engaging script based on the information collected from the internet and provided to you. \
+Be sure to include the latest facts, statistics, trends, and unique insights relevant to the video's topic to make the content informative, credible, and appealing. \
+The tone should always be friendly, conversational, upbeat, and slightly humorous—creating a natural and relatable narrative style. \
+The goal is not only to inform but also to build a sense of trust and emotional connection with the audience, while actively encouraging interaction (such as asking for opinions or prompting them to share their experiences). \
+If the video’s length allows, include a short question or thought-provoking comment at the end of the script to spark curiosity and increase engagement (e.g., “Would you buy this?” or “What do you think?”). \
+Only write the script itself—no extra explanations or additional text outside the narration."
     )
 
     German = (
-        "Schreiben Sie den Text optimiert und aktuell auf Grundlage der Informationen, die aus dem Internet gesammelt und Ihnen zur Verfügung gestellt wurden.\n"
-        "Nutzen Sie in Ihrem Text unbedingt die neuesten Fakten, Statistiken, Trends sowie besondere und interessante Informationen, die Sie durch Ihre Internetrecherche zum Thema des Videos erhalten haben,\n"
-        "damit der produzierte Inhalt glaubwürdig, wissenschaftlich, praktisch und aktuell ist.\n"
-        "Der Ton der Erzählungen ist stets freundlich, herzlich, optimistisch, mit einer Prise Humor versehen und fesselnd, und wird in einem natürlichen, gesprächigen Stil verfasst.\n"
-        "Die Erzählungen werden mit dem Ziel geschrieben, Vertrauen aufzubauen und eine Verbindung zum Publikum herzustellen.\n"
-        "Achten Sie beim Schreiben stets auf die Aktualität und Genauigkeit der Informationen aus dem Internet.\n"
-        "Schreiben Sie nur den Originaltext und schreiben Sie keine Sätze oder Erklärungen vor oder nach dem Text."
+"Erstellen Sie einen klaren, aktuellen und ansprechenden Text auf Grundlage der bereitgestellten Informationen aus dem Internet. \
+Integrieren Sie unbedingt die neuesten Fakten, Statistiken, Trends und besondere, spannende Erkenntnisse zum Thema des Videos, um den Inhalt glaubwürdig, informativ und relevant zu gestalten. \
+Der Erzählstil sollte stets freundlich, locker, optimistisch und mit einer Prise Humor versehen sein, so entsteht eine natürliche, gesprächige Atmosphäre. \
+Ziel der Erzählung ist es nicht nur zu informieren, sondern auch Vertrauen aufzubauen und eine emotionale Verbindung zum Publikum herzustellen, und gleichzeitig aktiv zur Interaktion anzuregen (z.B. durch Fragen oder Einladungen, eigene Erfahrungen zu teilen). \
+Wenn die Videolänge es zulässt, fügen Sie am Ende eine kurze Frage oder einen neugierig machenden Kommentar ein, um die Aufmerksamkeit zu steigern und mehr Reaktionen zu fördern (z.B.: „Würdet ihr das kaufen?“ oder „Was denkt ihr?“). \
+Schreiben Sie ausschließlich den Text der Erzählung, keine Erklärungen oder zusätzlichen Hinweise davor oder danach."
     )
 
     Persian = (
-        "بر اساس اطلاعاتی که از اینترنت جمع آوری شده و در اختیارت قرار داده شده است، متن را بهینه و به روز می‌نویسی.\n"
-        "حتماً در متن خود از جدیدترین فکت‌ها، آمارها، ترندها و نکات خاص و جذابی که از جستجوهای اینترنتی درباره موضوع ویدئو به دست می‌آوری استفاده کن تا محتوای تولیدی معتبر، علمی، کاربردی و به‌روز باشد.\n"
-        "لحن روایت‌ها همیشه دوستانه، صمیمی، خوش‌بینانه، با کمی شوخ‌طبعی و جذاب بوده و به صورت مکالمه‌ای طبیعی نوشته می‌شود.\n"
-        "روایت‌ها با هدف ایجاد اعتماد و ارتباط با مخاطب نوشته می‌شوند.\n"
-        "در هنگام نوشتن متن به اطلاعاتی که از اینترنت دریافت شده توجه کن و مطلب را به روز بنویس."
+"بر اساس اطلاعات به‌روز و معتبر جمع‌آوری‌شده از اینترنت، متنی بهینه و هماهنگ با موضوع ویدئو تهیه کن. \
+در متن خود حتماً از جدیدترین فکت‌ها، آمارها، ترندها و نکات خاص و جذابی که از جستجوهای آنلاین درباره محصول یا موضوع ویدئو به دست می‌آوری استفاده کن تا محتوا هم علمی و کاربردی باشد و هم برای مخاطب جذاب و قابل اعتماد. \
+لحن روایت باید همیشه صمیمی، دوستانه، خوش‌بینانه و کمی شوخ‌طبعانه باشد، طوری که حس یک گفت‌و‌گوی طبیعی و بی‌واسطه با مخاطب را القا کند. \
+هدف روایت، علاوه بر اطلاع‌رسانی، ایجاد حس نزدیکی و دعوت به تعامل فعال با مخاطب است، مثلاً از او خواسته شود تجربه‌اش را بگوید، نظرش را بنویسد یا سوالی کوتاه در ذهنش شکل بگیرد. \
+در پایان متن، اگر زمان اجازه می‌دهد، یک سوال ساده یا جمله‌ای تحریک‌کننده کنجکاوی قرار بده\
+(مثل: به نظرتون این ارزش خرید داره؟ یا شما بین این و مدل قبلی کدومو انتخاب می‌کنید؟) تا مخاطب بیشتر با محتوا درگیر شود و تمایل به کامنت گذاشتن یا لایک کردن داشته باشد."
     )
     
 class AIPrompt(Base):

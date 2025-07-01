@@ -23,7 +23,7 @@ async def login_instagram(db, page: Page, context: BrowserContext, user_id, user
                 # Login with cookies was successful
                 return {"success": True, "cookies": cookies}
             else:
-                print("Stored cookies invalid or expired, attempting fresh login.")
+                print("❌ Stored cookies invalid or expired, attempting fresh login.")
 
         # # 1. entering the Instagram homepage
         # await page.goto("https://www.instagram.com/", timeout=60000)

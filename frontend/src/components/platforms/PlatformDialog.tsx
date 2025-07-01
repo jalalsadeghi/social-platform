@@ -177,11 +177,6 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
           onChange={(e) => setFormData({ ...formData, posts_per_day: Number(e.target.value) })}
           placeholder="Posts per day"
         />
-        <Textarea
-          value={formData.cookies}
-          onChange={(e) => setFormData({ ...formData, cookies: e.target.value })}
-          placeholder="Cookies (optional)"
-        />
 
         {platformId && (
           <>
@@ -189,14 +184,29 @@ export const PlatformDialog: React.FC<Props> = ({ platformId, initialData, open,
               value={schedule}
               onChange={(e) => setSchedule(e.target.value)}
               placeholder={`{
-          "Mon": { "send01": "08:30", "send02": "12:00" },
-          "Tue": { "send01": "08:30" }
-        }`}
+  "Fri": {
+    "send01": "06:00",
+    "send02": "12:00",
+    "send03": "15:00"
+  },
+  "Mon": {
+    "send01": "06:00",
+    "send02": "12:00",
+    "send03": "15:00"
+  }
+}`
+}
               className="font-mono"
               rows={10}
             />
           </>
         )}
+
+        <Textarea
+          value={formData.cookies}
+          onChange={(e) => setFormData({ ...formData, cookies: e.target.value })}
+          placeholder="Cookies (optional)"
+        />
 
         <Button onClick={handleSubmit}>
           {platformId ? "Save Changes" : "Add"}

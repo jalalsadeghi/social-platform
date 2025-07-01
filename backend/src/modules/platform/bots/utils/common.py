@@ -52,31 +52,35 @@ async def safe_click(page, selector, name=None, max_attempts=3, timeout=15000, c
     print(f"❌ All attempts failed for {name}. Exiting.")
     return False
 
-async def safe_evaluate(page, selector, content_txt, name=None, max_attempts=3, timeout=15000, capture_on_fail=True):
+async def safe_evaluate(page, selector, content_txt, name=None, max_attempts=3, timeout=30000, capture_on_fail=True):
     for attempt in range(1, max_attempts + 1):
         try:
-            # کپی کردن عنوان در کلیپ‌بورد مرورگر
-            await page.evaluate(f'''
-                navigator.clipboard.writeText(`{content_txt}`);
-            ''')
+            await page.wait_for_selector(selector, state='visible', timeout=timeout)
+            await page.focus(selector)
             await random_delay(0.5, 1)
-
-            # کلیک کردن در کادر عنوان برای قرار دادن نشانگر ماوس
-            await page.click(selector)
+            await page.click(selector, timeout=timeout)
             await random_delay(0.5, 1)
+            await page.keyboard.down('Control')
+            await page.keyboard.press('A')
+            await page.keyboard.press('Backspace')
+            await page.keyboard.up('Control')
 
-            # پیست کردن متن
+            # Copy-paste logic instead of typing
+            await page.evaluate(f"""navigator.clipboard.writeText(`{content_txt}`)""")
+            await random_delay(0.5, 1)
             await page.keyboard.down('Control')
             await page.keyboard.press('V')
             await page.keyboard.up('Control')
 
             await random_delay(1, 2)
             await screenshot(page, name)
-
+            print(f"✅ Successfully evaluated selector: {selector}")
+            return True
         except Exception as e:
             print(f"⚠️ Error evaluating selector '{selector}': {e}")
-            if capture_on_fail and attempt == max_attempts:
-                await screenshot(page, name, "error")
+            await screenshot(page, name, "error")
+            await random_delay(2, 4)
+    return False
 
 
 async def screenshot(page, name, status: str = ""):
@@ -88,14 +92,11 @@ async def screenshot(page, name, status: str = ""):
             print(f"🛠️ Error snapshot saved: {html_snapshot_path}")
 
         screenshot_path = f'uploads/{timestamp}_screenshot_{name}_{status}.png'
-
-        # فونت‌ها را نادیده بگیرید
-        await page.route("**/*.{woff,woff2,ttf,otf}", lambda route: route.abort())
-        await page.wait_for_load_state("load", timeout=15000)
-        await page.screenshot(path=screenshot_path, timeout=15000, full_page=False)
+        await page.screenshot(path=screenshot_path)
         
     except Exception as e:
         print(f"❌ Failed to take screenshot for {name}: {e}")
+
 
 async def correct_samesite_value(cookies):
     valid_samesite = {'Strict', 'Lax', 'None'}

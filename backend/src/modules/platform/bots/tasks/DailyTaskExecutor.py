@@ -69,12 +69,12 @@ async def generate_posting(content_id: UUID, user_id: UUID, platform_id: UUID, p
                 )
 
             if not login_result["success"]:
-                print(f"Login to {creds['platform']} failed: {login_result['error']}")
+                print(f"❌ Login to {creds['platform']} failed: {login_result['error']}")
                 await browser.close()
                 return
 
-            print(f"Logged in {creds['platform']} successfully.")
-            
+            print(f"✅ Logged in {creds['platform']} successfully.")
+
             if creds["platform"] is "instagram":
                 post_content = await post_to_instagram(db, user_id, page, content_id, platform_name)
             elif creds["platform"] is "youtube":

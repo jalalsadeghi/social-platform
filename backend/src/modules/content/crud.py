@@ -2,7 +2,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from uuid import UUID
 from sqlalchemy.future import select
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 from .models import Content, QueueStatus, MusicFile, ContentPlatform, PostStatus
 from modules.platform.models import Platform
@@ -116,8 +116,10 @@ async def get_max_priority(db: AsyncSession, user_id: UUID, platform_id: UUID) -
         .where(
             Content.user_id == user_id,
             ContentPlatform.platform_id == platform_id,
-            ContentPlatform.status == PostStatus.ready,
-            ContentPlatform.status == PostStatus.pending,
+            or_(
+                ContentPlatform.status == PostStatus.ready,
+                ContentPlatform.status == PostStatus.pending
+            )
         )
     )
     max_priority = result.scalar()

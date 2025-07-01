@@ -49,7 +49,19 @@ def schedule_priority_shift_task(self):
                 
                 next_send_time = sorted_send_times[idx + 1] if idx + 1 < len(sorted_send_times) else None
 
-                if (current_hour_minute >= send_time) and (next_send_time is None or current_hour_minute < next_send_time):
+                # if (current_hour_minute >= send_time) and (next_send_time > current_hour_minute or next_send_time is None):
+                if (current_hour_minute >= send_time) and (next_send_time is None or next_send_time > current_hour_minute):
+    
+                    # ready_priority_zero_exists = session.execute(
+                    #     select(ContentPlatform)
+                    #     .where(
+                    #         ContentPlatform.platform_id == platform.id,
+                    #         ContentPlatform.status == PostStatus.ready,
+                    #         ContentPlatform.priority == 0
+                    #     )
+                    # ).scalar() is not None
+
+                    # if not ready_priority_zero_exists:
                     session.execute(
                         update(ContentPlatform)
                         .where(
@@ -63,14 +75,18 @@ def schedule_priority_shift_task(self):
                     session.commit()
 
                     redis_client.setex(operation_key, 86400, "completed")
-                    logging.info(f"Priority updated for platform_id {platform.id} at {send_time}.")
+                    print(f"✅ Priority updated for platform {platform.account_identifier} at {send_time}.")
                     break
 
-        logging.info("Priority shift task completed.")
+                print(f"🔄 Skipping platform {platform.account_identifier} for send time {send_time}.")
+
+            print(f"⏳ Platform {platform.account_identifier} processed.")
+
+        print("✅ Priority shift task completed.")
 
     except Exception as e:
         session.rollback()
-        logging.error(f"Error occurred: {e}")
+        print(f"❌ Error occurred: {e}")
         self.update_state(
             state='FAILURE',
             meta={
