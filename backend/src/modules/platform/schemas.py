@@ -38,3 +38,8 @@ class PlatformOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class PlatformUpdateResponse(BaseModel):
+    success: bool
+    log: str

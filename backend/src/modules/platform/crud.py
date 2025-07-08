@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.future import select
 from typing import Optional, List, Dict, Any
 from .models import Platform, SocialPlatform
+from .bots.utils.platform_utils import login_to_platform, get_page
 from modules.ai.models import Language
 from modules.ai.crud import generate_ai_content
 from .schemas import PlatformUpdate
@@ -71,7 +72,6 @@ async def generate_schedule_with_ai(language: str, posts_per_day: int) -> dict:
 #             "expires": int(expires)
 #         })
 #     return cookies
-
 
 async def create_platform(
         db: AsyncSession, 
@@ -262,11 +262,8 @@ async def update_platforms(db: AsyncSession, platforms_id: UUID, user_id: UUID, 
         "created_at": db_platform.created_at,
         "updated_at": db_platform.updated_at
     }
-
+    
     return response_data
-
-
-
 
 async def delete_platform(db: AsyncSession, platform_id: UUID, user_id: UUID):
     result = await db.execute(select(Platform).where(Platform.id == platform_id, Platform.user_id == user_id))

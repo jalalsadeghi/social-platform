@@ -3,6 +3,7 @@ from core.config import settings
 import random
 import asyncio
 import time
+
 timestamp = int(time.time())
 
 async def random_delay(min_seconds=3, max_seconds=7):
@@ -109,3 +110,4 @@ async def correct_samesite_value(cookies):
         cookie["sameSite"] = samesite
         corrected_cookies.append(cookie)
     return corrected_cookies
+

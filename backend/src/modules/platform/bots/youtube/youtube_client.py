@@ -1,6 +1,6 @@
 # src/modules/platform/bot/youtube/youtube_client.py
 from playwright.async_api import Page, BrowserContext
-from ..utils.common import get_headers, random_delay, screenshot
+from ..utils.common import random_delay, screenshot
 from ..utils.secure_credentials import get_cookies, store_cookies
 from ..utils.common import correct_samesite_value
 import random
@@ -28,10 +28,10 @@ async def login_youtube(db, page: Page, context: BrowserContext, user_id, userna
                 print("🔑 Successfully logged in with stored cookies.")
                 await screenshot(page, "youtube_Login_Success")
                 # Login with cookies was successful
-                return {"success": True, "cookies": cookies}
+                return {"success": True, "log": "✅ Login successful with cookies."}
             else:
                 await screenshot(page, "youtube_Login_invalid")
-                print("Stored cookies invalid or expired, attempting fresh login.")
+                return {"success": False, "log": "❌ Stored cookies invalid or expired, attempting fresh login."}
 
         # # 1. entering the youtube homepage
         # await page.goto("https://www.youtube.com/", timeout=60000)

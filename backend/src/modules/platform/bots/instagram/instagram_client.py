@@ -1,6 +1,6 @@
 # src/modules/platform/bot/instagram/instagram_client.py
 from playwright.async_api import Page, BrowserContext
-from ..utils.common import get_headers, random_delay
+from ..utils.common import random_delay
 from ..utils.secure_credentials import get_cookies, store_cookies
 from ..utils.common import correct_samesite_value
 import random
@@ -21,9 +21,9 @@ async def login_instagram(db, page: Page, context: BrowserContext, user_id, user
             await random_delay(5, 8)
             if await page.query_selector('nav'):
                 # Login with cookies was successful
-                return {"success": True, "cookies": cookies}
+                return {"success": True, "log": "✅ Login successful with cookies."}
             else:
-                print("❌ Stored cookies invalid or expired, attempting fresh login.")
+                return {"success": False, "log": "❌ Stored cookies invalid or expired, attempting fresh login."}
 
         # # 1. entering the Instagram homepage
         # await page.goto("https://www.instagram.com/", timeout=60000)
@@ -94,4 +94,4 @@ async def login_instagram(db, page: Page, context: BrowserContext, user_id, user
         # return {"success": True, "cookies": cookies}
 
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        return {"success": False, "log": str(e)}
