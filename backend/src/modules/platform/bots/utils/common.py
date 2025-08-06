@@ -1,4 +1,4 @@
-# backend/src/modules/platform/bot/utils/common.py
+# File: backend/src/modules/platform/bots/utils/common.py
 from core.config import settings
 import random
 import asyncio

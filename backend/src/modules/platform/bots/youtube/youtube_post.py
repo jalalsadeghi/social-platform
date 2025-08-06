@@ -7,7 +7,7 @@ import random
 import time
 
 async def post_to_youtube(db, user_id, page, content_id, platform_name):
-    print(f"Platform name: {platform_name}")
+    print(f"🔄 Platform name: {platform_name}")
     content = await get_content_by_id(db, content_id, user_id)
 
     thumbnail_file = content.thumb_filename
@@ -29,12 +29,11 @@ async def post_to_youtube(db, user_id, page, content_id, platform_name):
         ('ytcp-button#next-button button[aria-label="Next"]:not([aria-disabled="true"])', "Next_Button_Checks"),
         ('tp-yt-paper-radio-button[name="PUBLIC"]', "Select_Public"),
         ('a[href*="youtube.com/shorts/"]', "Select_Video_ID"),
-        ('ytcp-button#done-button button[aria-label="Save"]:not([aria-disabled="true"])', "Save_Button")
+        ('ytcp-button#done-button button[aria-label="Save"]:not([aria-disabled="true"])', "Save_Button"),
         ('ytcp-button#close-button button', "Close_Button"),
     ]
     
     for index, (selector, name) in enumerate(steps, start=201):
-
         if name == "Upload_Dialog_Opened":
             try:
                 await page.wait_for_selector(selector, state='visible', timeout=30000)
@@ -184,20 +183,20 @@ async def post_to_youtube(db, user_id, page, content_id, platform_name):
 
     # await page.goto(f"https://www.youtube.com/{platform_name}/")
 
-    await page.wait_for_selector('a[href*="/reel/"]', timeout=30000)
+    # await page.wait_for_selector('a[href*="/reel/"]', timeout=30000)
 
-    ai_content_snippet = content.ai_content[:50]
-    elements = await page.query_selector_all('a[href*="/reel/"]')
+    # ai_content_snippet = content.ai_content[:50]
+    # elements = await page.query_selector_all('a[href*="/reel/"]')
 
-    for elem in elements:
-        img = await elem.query_selector('img[alt]')
-        if img:
-            alt_text = await img.get_attribute('alt')
-            if ai_content_snippet in alt_text:
-                href = await elem.get_attribute('href')
-                reel_id = href.split('/')[-2]
-                print(f"✅ Found reel ID: {reel_id}")
-                return reel_id
+    # for elem in elements:
+    #     img = await elem.query_selector('img[alt]')
+    #     if img:
+    #         alt_text = await img.get_attribute('alt')
+    #         if ai_content_snippet in alt_text:
+    #             href = await elem.get_attribute('href')
+    #             reel_id = href.split('/')[-2]
+    #             print(f"✅ Found reel ID: {reel_id}")
+    #             return reel_id
 
-    # print("⚠️ Could not find the posted reel.")
-    return False
+    # # print("⚠️ Could not find the posted reel.")
+    # return False
